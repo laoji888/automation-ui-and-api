@@ -1,0 +1,5 @@
+from pageObject.tapweb.login_page import LoginPage
+from pageObject.tapweb.home_page import HomebPage
+from pageObject.tapweb.tower_integration_page import TowerIntegrationPage
+from pageObject.tapweb.req_integration_page import ReqIntegrationPage
+from pageObject.tapweb.req_info_page import ReqInfoPage

@@ -1,0 +1,3 @@
+[32mINFO    [0m root:baidu_home.py:23 在输入框输入-->java
+[32mINFO    [0m root:baidu_home.py:23 在输入框输入-->java
+[32mINFO    [0m root:baidu_home.py:23 在输入框输入-->java
