@@ -1,15 +1,14 @@
 from selenium import webdriver
-from common.base_web import BasePage
+from common.base_web import Base_web
 from time import sleep
 from common import path
 
 
 
-# 继承BasePage类
-class Sample2(BasePage):
+# 继承Base_web类
+class Sample2(Base_web):
 
     def element(self):
-
         element = self.element_info("sample2")
         return element
 
