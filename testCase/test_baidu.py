@@ -3,17 +3,15 @@
 # @Author  : 纪亚男
 # Sample场景： 运行百度测试场景
 
-import os, warnings
+import warnings
 import unittest
-
 from BeautifulReport import BeautifulReport
 from common import path
-from pageObject.baidu_home import BaiduHome
+from pageObject.baidu.baidu_home import BaiduHome
 from common.driver import Driver
 from common.baseTest import BaseTest
 from common.logger import log
-from time import sleep
-import pytest, allure
+
 
 # 继承unittest框架
 class TestBaidu(BaseTest):
