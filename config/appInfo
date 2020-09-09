@@ -1,0 +1,3 @@
+[腾讯新闻]
+appPackage = com.tencent.news
+appActivity =com.tencent.news.activity.SplashActivity

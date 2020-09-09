@@ -2,39 +2,14 @@
 # WebURL地址
 URL = http://www.baidu.com
 
-
-[MySQL]
-# mysql数据库相关信息
-host = localhost
-username = root
-paswd = 000000
-databasename = zentao
-encoding = 'utf-8'
-port = 3306
-
-
-[Portal_Oracle]
-# 统一 Oracle数据库信息
-username = portaluser
-paswd = znBkmaq6EY
-host = 192.168.150.214:1521
-databasename = mappdb
-
-
-[Jiyn_firefox]
+[firefox]
 # firefox执行机
 pms_host = 119.3.207.114:5002
 
-[Jiyn-chrome]
+[chrome]
 # chrome执行机
 uflowct_host = 119.3.207.114:3005
 ;uflowct_host = 106.13.132.197:3010
-
-[Jiyn-ie]
-# ie执行机
-#uflowct_host = 10.34.80.22:80
-uflowct_host = 49.4.2.125:9531
-
 
 [Report_quantity]
 # 测试报告的最大数量

@@ -1,0 +1,16 @@
+[MySQL]
+# mysql数据库相关信息
+host = localhost
+username = root
+paswd = 000000
+databasename = zentao
+encoding = 'utf-8'
+port = 3306
+
+
+[Portal_Oracle]
+# 统一 Oracle数据库信息
+username = portaluser
+paswd = znBkmaq6EY
+host = 192.168.150.214:1521
+databasename = mappdb
