@@ -10,20 +10,20 @@ def driver(section,appInfo,callAddress):
     :return:
     """
     #执行机信息
-    capabilities = get_config_info(section, key=None, filename="/devicesInfo")
+    capabilities = get_config_info(section, key=None, filename="/devicesInfo.ini")
     #应用信息
-    app = get_config_info(appInfo, key=None, filename="/appInfo")
+    app = get_config_info(appInfo, key=None, filename="/appInfo.ini")
     capabilities['appPackage'] = app["appPackage"]
     capabilities['appActivity'] = app["appActivity"]
 
-    ip = get_config_info("mobile", key=callAddress, filename="/devicesInfo")
+    ip = get_config_info("mobile", key=callAddress, filename="/devicesInfo.ini")
 
     driver =  webdriver.Remote(ip, capabilities)
     return driver
 
 
 if __name__ == '__main__':
-    d = driver("夜神","腾讯新闻","loction")
+    d = driver("华为p20","腾讯新闻","appium01")
     time.sleep(5)
     d.quit()
 

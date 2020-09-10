@@ -23,7 +23,7 @@ def get_config_info(section, key=None, filename="/web-config.ini"):
     :param filename: .int文件名
     :return:
     """
-    path = filepath + filename
+    path = filepath + "/" +filename
     config = ConfigObj(path, encoding='UTF-8')
     if key == None:
         return dict(config[section])
@@ -94,6 +94,21 @@ def operation_oracle(log, sql, databaseInfo="Oracle"):
     cur.close()
     conn.close()
     log.info("操作Oracle数据库成功-->{}".format(sql))
+
+# 获取yaml文件内容
+def get_yaml_data(yaml_file):
+    # 打开yaml文件
+    print("***获取yaml文件数据***")
+    file = open(yaml_file, 'r', encoding="utf-8")
+    file_data = file.read()
+    file.close()
+
+    # 将字符串转化为字典或列表
+    print("***转化yaml数据为字典或列表***")
+    data = yaml.load(file_data)
+    print(data)
+    print("类型：", type(data))
+    return data
 
 
 
