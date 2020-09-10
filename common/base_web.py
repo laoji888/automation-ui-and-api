@@ -13,12 +13,13 @@ from time import sleep
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import Select
 from common import path
+from selenium.webdriver.common.by import By
 
 
 class Base_web():
 
 
-    def __init__(self, driver, log, element):
+    def __init__(self, driver, log):
         """
     初始化浏览器对象
         :param logname: 运行测试场景时生成的log文件名
@@ -26,7 +27,7 @@ class Base_web():
         """
         self.driver = driver
         self.log = log
-        self.element = element
+
 
 
 
@@ -399,6 +400,7 @@ class Base_web():
         :param value: 输入的数据
         :param loc: 元素信息
         """
+        print(*loc)
         self.await_element(*loc, timeout=timeput)
         self.add_style(*loc)
         self.driver.find_element(*loc).send_keys(Keys.CONTROL + "a")
