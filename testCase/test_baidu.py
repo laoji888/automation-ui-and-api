@@ -10,7 +10,7 @@ from pageObject.baidu.baidu_home import BaiduHome
 from common.driver_web import Driver_web
 from common.logger import log
 
-class TestBaidu():
+class TestBaidu(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter("ignore", ResourceWarning)
         self.browser = Driver_web("firefox", "baidu",
@@ -24,8 +24,8 @@ class TestBaidu():
         self.driver = self.browser.driver
         self.driver_home = BaiduHome(self.driver, self.log)
         #self.driver_home.screenshot("baidu.png")
-        self.driver_home.search("java")
-        self.driver_home.set()
+        # self.driver_home.search("java")
+        # self.driver_home.set()
 
 
     def tearDown(self):
