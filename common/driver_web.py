@@ -15,7 +15,7 @@ class Driver_web():
     ps:要在config下的configInfo下配置执行机的ip
     """
 
-    def __init__(self, browser, system, section, key, timeout=30):
+    def __init__(self, browser, system, section="seleniumHub", key="host", timeout=30):
         """
     初始化driver类
         :param browser: 要启动的浏览器类型
@@ -87,8 +87,8 @@ class Driver_web():
 
 
 if __name__ == '__main__':
-    dr = Driver_web("firefox")
+    dr = Driver_web("firefox", "baidu")
     from time import sleep
 
-    sleep(120)
+    sleep(3)
     dr.quit_browser()

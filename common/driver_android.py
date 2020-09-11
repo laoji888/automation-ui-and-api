@@ -10,13 +10,13 @@ def driver(section,appInfo,callAddress):
     :return:
     """
     #执行机信息
-    capabilities = get_config_info(section, key=None, filename="/devicesInfo.ini")
+    capabilities = get_config_info(section, key=None, filename="/devices_info.ini")
     #应用信息
-    app = get_config_info(appInfo, key=None, filename="/appInfo.ini")
+    app = get_config_info(appInfo, key=None, filename="/app_Info.ini")
     capabilities['appPackage'] = app["appPackage"]
     capabilities['appActivity'] = app["appActivity"]
 
-    ip = get_config_info("mobile", key=callAddress, filename="/devicesInfo.ini")
+    ip = get_config_info("mobile", key=callAddress, filename="/devicesInfo.ini.ini")
 
     driver =  webdriver.Remote(ip, capabilities)
     return driver

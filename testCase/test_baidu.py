@@ -13,15 +13,14 @@ from common.logger import log
 class TestBaidu():
     def setUp(self):
         warnings.simplefilter("ignore", ResourceWarning)
-        self.browser = Driver_web("firefox", "baidu1",
-                "Jiyn_firefox", "host")
+        self.browser = Driver_web("firefox", "baidu1")
         self.log = log("baidutest")
 
 
     # 这是一个场景，是把objects下某个系统的单个功能点串起来形成一个场景，启动下一个driver前需要把上一个driver关掉
     def test_home(self):
         warnings.simplefilter("ignore", ResourceWarning)
-        self.browser = Driver_web("firefox", "bd",
+        self.browser = Driver_web("firefox", "baidu",
                                   "Jiyn_firefox", "host")
         self.log = log("baidutest")
         '''百度测试场景'''
