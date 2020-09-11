@@ -1,36 +1,13 @@
+import time
 
-import yaml
-import os
-from selenium.webdriver.common.by import By
+from selenium import webdriver
 
-
-
-# def get_yaml_data(yaml_file):
-#     # 打开yaml文件
-#     print("***获取yaml文件数据***")
-#     file = open(yaml_file, 'r', encoding="utf-8")
-#     file_data = file.read()
-#     file.close()
-#
-#     # 将字符串转化为字典或列表
-#     print("***转化yaml数据为字典或列表***")
-#     data = yaml.load(file_data)
-#     print(data)
-#     print("类型：", type(data))
-#     return data
-#
-#
-#
-# aa = get_yaml_data("E:\\python_script\\automation-ui-and-api\\config\\devicesInfo.yaml")
-# print(aa)
-# # a1 = (aa["输入框"][0],aa["输入框"][1])
-# # print(a1)
-# # print(type(a1))
-
-from common.util import get_config_info
-
-aa = get_config_info("da", key=None, filename="/aaa.ini")
-print(aa)
-# bb = list(eval(aa["app"]))
-# print(bb)
-
+driver = webdriver.Remote(command_executor='http://192.168.31.111:8888/wd/hub',
+                                           desired_capabilities={'platform': 'ANY',
+                                                                 'browserName': 'firefox',
+                                                                 'version': "",
+                                                                 'javascriptEnabled': True
+                                                                 })
+driver.get("http://www.baidu.com")
+time.sleep(5)
+driver.quit()

@@ -12,8 +12,8 @@ from common import path
 # 继承BasePage类
 class BaiduHome(Base_web):
     def __init__(self, driver, log):
-        self.home = self.element_info("baidu_home", file_name="baidu_elements.xlsx")
-        super().__init__(driver, log, self.home)
+        self.home = self.element_info("home_page", file_name="baidu\\baidu_elements.xlsx")
+        super().__init__(driver, log)
         self.log = log
 
     # 这是页面下的某个功能点，对应到某个系统下某个页面的功能，比如进入待办功能，
@@ -21,7 +21,7 @@ class BaiduHome(Base_web):
         # 百度搜索java
         self.send_keys(value, *self.home["输入框-百度搜索框"])
         self.log.info("在输入框输入-->{}".format(value))
-        self.click(*self.home["按钮-百度一下按钮"])
+        self.click(*self.home["按钮-百度一下"])
         sleep(2)
 
     def set(self):

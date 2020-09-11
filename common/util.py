@@ -14,7 +14,7 @@ import pymysql, cx_Oracle, sys
 filepath = path.CONFIG_DIR
 
 
-def get_config_info(section, key=None, filename="/webInfo"):
+def get_config_info(section, key=None, filename="/web-config.ini"):
     """
 获取.ini文件信息,如果key为空时返回section下的所有信息，以字典的方式输出
 如果key不为空时返回section下的key的值，以字符串的方式输出
