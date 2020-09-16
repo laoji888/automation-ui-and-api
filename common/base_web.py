@@ -31,14 +31,14 @@ class Base_web():
 
 
 
-    def get_key(self, dict, value):
-        """
-        通过value获取对应的key
-        :param dict:
-        :param value:
-        :return:
-        """
-        return list(filter(lambda k: dict[k] == value, dict))
+    # def get_key(self, dict, value):
+    #     """
+    #     通过value获取对应的key
+    #     :param dict:
+    #     :param value:
+    #     :return:
+    #     """
+    #     return list(filter(lambda k: dict[k] == value, dict))
 
 
 
@@ -115,7 +115,7 @@ class Base_web():
 
 
 
-    def await_element(self, timeout=30, *loc):
+    def await_element(self, *loc, timeout=30):
         """
     等待某个元素出现(显式等待)
         :param timeout:等待元素超时时间
@@ -124,12 +124,12 @@ class Base_web():
         try:
             WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located(loc))
         except Exception as e:
-            self.log.error("等待元素“{}”失败，元素不存在或者时间超时".format(self.get_key(self.element, loc)))
+            self.log.error("等待元素“{}”失败，元素不存在或者时间超时".format(str(loc)))
             raise e
 
 
 
-    def click(self, timeout=30, *loc):
+    def click(self, *loc, timeout=30):
         """
     定位到元素并点击,如果点击失败判断元素是否显示，如果显示尝试等待两秒再次点击，再次点击失败后写入日志。
         :param loc: 元素信息，格式为元组
@@ -138,15 +138,15 @@ class Base_web():
         self.add_style(*loc)
         try:
             self.driver.find_element(*loc).click()
-            self.log.debug("点击元素-->{}成功".format(self.get_key(self.element, loc)))
+            self.log.debug("点击元素-->{}成功".format(loc))
         except Exception as e:
             ele = self.is_display(*loc)
             if ele:
                 sleep(3)
                 self.driver.find_element(*loc).click()
-                self.log.debug("二次点击元素-->{}成功".format(self.get_key(self.element, loc)))
+                self.log.debug("二次点击元素-->{}成功".format(loc))
             else:
-                self.log.error("点击元素-->{}失败，错误信息是：{}".format(self.get_key(self.element, loc), e))
+                self.log.error("点击元素-->{}失败，错误信息是：{}".format(e))
                 raise e
         self.set_style(*loc)
 
@@ -245,15 +245,15 @@ class Base_web():
         element = self.element_object(*loc)
         try:
             ActionChains(self.driver).double_click(element).perform()
-            self.log.debug("双击{}成功".format(self.get_key(self.element, loc)))
+            self.log.debug("双击{}成功".format(loc))
         except Exception as e:
             ele = self.is_display(*loc)
             if ele:
                 sleep(2)
                 ActionChains(self.driver).double_click(element).perform()
-                self.log.debug("双击{}成功".format(self.get_key(self.element, loc)))
+                self.log.debug("双击{}成功".format(loc))
             else:
-                self.log.error("双击{}失败,报错信息是-->{}".format(self.get_key(self.element, loc), e))
+                self.log.error("双击{}失败,报错信息是-->{}".format(e))
                 raise e
 
 
@@ -283,9 +283,9 @@ class Base_web():
         try:
             self.driver.execute_script("arguments[0].scrollIntoView();", ele)
             self.set_style(*loc)
-            self.log.debug("滚动到元素{}成功".format(self.get_key(self.element, loc)))
+            self.log.debug("滚动到元素{}成功".format(loc))
         except Exception as e:
-            self.log.error("滚动到元素{}失败：{}".format(self.get_key(self.element, loc), e))
+            self.log.error("滚动到元素{}失败：{}".format(e))
             raise e
 
 
@@ -302,10 +302,10 @@ class Base_web():
 
         try:
             ele = self.driver.find_element(*loc).text
-            self.log.debug("返回{}文本成功，返回的文本-->{}".format(self.get_key(self.element, loc), ele))
+            self.log.debug("返回{}文本成功，返回的文本-->{}".format(loc, ele))
             return ele
         except Exception as e:
-            self.log.debug("返回{}文本失败-->{}".format(self.get_key(self.element, loc), e))
+            self.log.debug("返回文本失败-->{}".format(e))
             raise e
 
 
@@ -346,10 +346,10 @@ class Base_web():
 
         try:
             ele = self.driver.find_element(*loc)
-            self.log.debug("返回对象成功{}".format(self.get_key(self.element, loc)))
+            self.log.debug("返回对象成功{}".format(loc))
             return ele
         except Exception as e:
-            self.log.error("返回{}对象失败,错误信息是-->{}".format(self.get_key(self.element, loc), e))
+            self.log.error("返回{}对象失败,错误信息是-->{}".format(e))
             raise e
 
 
@@ -375,7 +375,7 @@ class Base_web():
                     Select(ele).select_by_index(index)
                     self.log.debug("下拉框选择成功")
                 except Exception as e:
-                    self.log.error("下拉框{}选择失败-->{}".format(self.get_key(self.element, loc), e))
+                    self.log.error("下拉框{}选择失败-->{}".format(e))
                     raise e
 
 
@@ -390,17 +390,15 @@ class Base_web():
         self.log.debug("执行js成功")
         return result
 
-        # self.get_key(self.element)
 
 
 
-    def send_keys(self, value, timeput=30, *loc):
+    def send_keys(self, value, *loc, timeput=30):
         """
         等待元素出现后清空并输入数据
         :param value: 输入的数据
         :param loc: 元素信息
         """
-        print(*loc)
         self.await_element(*loc, timeout=timeput)
         self.add_style(*loc)
         self.driver.find_element(*loc).send_keys(Keys.CONTROL + "a")
@@ -447,13 +445,13 @@ class Base_web():
         ele = self.driver.find_element(*loc)
         try:
             self.driver.switch_to.frame(ele)
-            self.log.debug("切换到框架{}".format(self.get_key(self.element, loc)))
+            self.log.debug("切换到框架{}".format(loc))
         except Exception as e:
             if self.is_display(ele):
                 try:
                     sleep(2)
                     self.driver.switch_to.frame(ele)
-                    self.log.debug("切换到框架{}".format(self.get_key(self.element, loc)))
+                    self.log.debug("切换到框架{}".format(loc))
                 except Exception as e:
                     self.log.error("框架不存在或者未显示{}".format(e))
                     raise e
@@ -514,16 +512,16 @@ class Base_web():
         try:
             ActionChains(self.driver).move_to_element(ele).perform()
             self.set_style(*loc)
-            self.log.debug("鼠标悬停至{}成功".format(self.get_key(self.element, loc)))
+            self.log.debug("鼠标悬停至{}成功".format(loc))
         except Exception as e:
             if self.is_display(*loc):  # 判断元素是否显示
                 try:
                     sleep(2)
                     ActionChains(self.driver).move_to_element(ele).perform()
                     self.set_style(*loc)
-                    self.log.debug("鼠标悬停至{}成功".format(self.get_key(self.element, loc)))
+                    self.log.debug("鼠标悬停至{}成功".format(loc))
                 except Exception as e:
-                    self.log.error("鼠标悬停至{}失败-->{}".format(self.get_key(self.element, loc), e))
+                    self.log.error("鼠标悬停至{}失败-->{}".format(e))
                     raise e
 
 
