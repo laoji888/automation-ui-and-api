@@ -12,7 +12,7 @@ from common import path
 # 继承BasePage类
 class BaiduHome(Base_web):
     def __init__(self, driver, log):
-        self.home = self.element_info("home_page", file_name="baidu\\baidu_elements.xlsx")
+        self.home = self.element_info("home_page", file_name="web\\baidu\\baidu_elements.xlsx")
         super().__init__(driver, log)
         self.log = log
 

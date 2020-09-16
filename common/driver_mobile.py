@@ -1,6 +1,7 @@
 import time
 from appium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
 
 from common.util import get_config_info
 
@@ -18,20 +19,25 @@ def driver(section,appInfo,callAddress):
     capabilities['appPackage'] = app["appPackage"]
     capabilities['appActivity'] = app["appActivity"]
 
-
-    ip = get_config_info("mobile", key=callAddress, filename="/devices_info.ini")
+    #获取执行机调用地址
+    ip = get_config_info("mobile", key=callAddress, filename="/host_config.ini")
 
     driver =  webdriver.Remote(ip, capabilities)
     return driver
 
 
 if __name__ == '__main__':
+    from selenium.webdriver.support import expected_conditions as EC
     d = driver("夜神","boss","appium01")
-    time.sleep(15)
-    # d.find_element_by_xpath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.View/android.widget.LinearLayout[2]/android.widget.LinearLayout[1]/android.widget.FrameLayout/android.view.View/android.widget.LinearLayout/android.widget.FrameLayout[1]/android.widget.RelativeLayout/android.widget.RelativeLayout/android.widget.LinearLayout/android.widget.RelativeLayout[2]/android.widget.ImageView"
-    # ).click()
-    d.find_element_by_xpath("//*[@resource-id='com.hpbr.bosszhipin:id/img_icon' and @class='android.widget.ImageView']").click()
+    try:
+        WebDriverWait(d, 20).until(EC.visibility_of_element_located((By.ID,"com.hpbr.bosszhipin:id/iv_tab_4")))
+        print("等待元素成功")
+    except Exception as e:
+        print(e)
+
+    d.find_element(By.ID,"com.hpbr.bosszhipin:id/iv_tab_4").click()
     time.sleep(5)
+    d.scroll()
     d.quit()
 
 
