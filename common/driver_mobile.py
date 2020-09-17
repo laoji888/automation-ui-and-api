@@ -34,10 +34,9 @@ if __name__ == '__main__':
         print("等待元素成功")
     except Exception as e:
         print(e)
-
+    d.find_element().get_attribute()
     d.find_element(By.ID,"com.hpbr.bosszhipin:id/iv_tab_4").click()
+    d.get_clipboard_text()
     time.sleep(5)
-    d.scroll()
-    d.quit()
 
 

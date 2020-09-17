@@ -4,6 +4,7 @@
 # 主要对selenium常用的方法进行二次封装
 
 import re, os, datetime, xlrd
+from selenium import webdriver
 from common.util import *
 import requests
 from selenium.webdriver.common.keys import Keys
@@ -18,7 +19,6 @@ from selenium.webdriver.common.by import By
 
 class Base_web():
 
-
     def __init__(self, driver, log):
         """
     初始化浏览器对象
@@ -28,9 +28,6 @@ class Base_web():
         self.driver = driver
         self.log = log
 
-
-
-
     # def get_key(self, dict, value):
     #     """
     #     通过value获取对应的key
@@ -39,8 +36,6 @@ class Base_web():
     #     :return:
     #     """
     #     return list(filter(lambda k: dict[k] == value, dict))
-
-
 
     def add_style(self, *loc):
         """
@@ -55,8 +50,6 @@ class Base_web():
         except:
             pass
 
-
-
     def set_style(self, *loc):
         """
     操作元素后把红框改成蓝框
@@ -70,8 +63,6 @@ class Base_web():
         except:
             pass
 
-
-
     def implicitly_wait(self, timout=30):
         """
     等待页面元素全局加载完毕(隐式等待)，超时时间默认是30秒，如果30秒后没有加载完成执行一次刷新
@@ -84,16 +75,12 @@ class Base_web():
             self.driver.refresh()
             self.log.debug("全局等待超时，已刷新页面")
 
-
-
     def refresh(self):
         """
     刷新浏览器
         """
         self.driver.refresh()
         self.log.debug("浏览器刷新成功")
-
-
 
     def forward(self):
         """
@@ -103,8 +90,6 @@ class Base_web():
         title = self.get_title()
         self.log.debug("浏览器前进成功，当前的页面title为-->{}".format(title))
 
-
-
     def back(self):
         """
     浏览器后退
@@ -112,8 +97,6 @@ class Base_web():
         self.driver.back()
         title = self.get_title()
         self.log.debug("浏览器后退成功，当前的页面title为-->{}".format(title))
-
-
 
     def await_element(self, *loc, timeout=30):
         """
@@ -126,8 +109,6 @@ class Base_web():
         except Exception as e:
             self.log.error("等待元素“{}”失败，元素不存在或者时间超时".format(str(loc)))
             raise e
-
-
 
     def click(self, *loc, timeout=30):
         """
@@ -150,9 +131,7 @@ class Base_web():
                 raise e
         self.set_style(*loc)
 
-
-
-    def elements_click(self, index, timeout=30, *loc):
+    def elements_click(self, index, *loc, timeout=30):
         """
     定位元素集合，用索引选择要点击的元素
         :param timeout: 等待元素超时时间
@@ -169,8 +148,6 @@ class Base_web():
             self.log.error("选择{}集合的第{}个元素失败：{}".format(loc, index, e))
             raise e
             pass
-
-
 
     def clickXY(self, section="firefox", key="host", *element):
         """
@@ -232,9 +209,7 @@ class Base_web():
         r = requests.get('http://' + host + '/webdriver/CLICK_XY', params=buttonxy)
         self.log.debug(r.text)
 
-
-
-    def double_click(self, timeout=30, *loc):
+    def double_click(self, *loc, timeout=30):
         """
     双击鼠标左键
         :param timeout: 等待元素超时时间
@@ -256,8 +231,6 @@ class Base_web():
                 self.log.error("双击{}失败,报错信息是-->{}".format(e))
                 raise e
 
-
-
     def alert_accept(self):
         """
     接受弹窗
@@ -269,9 +242,7 @@ class Base_web():
             self.log.error("弹窗处理失败{}".format(e))
             raise e
 
-
-
-    def scroll_into_element(self, timeout=30, *loc):
+    def scroll_into_element(self, *loc, timeout=30):
         """
     滚动条滚动到指定元素
         :param timeout: 等待元素超时时间
@@ -288,9 +259,7 @@ class Base_web():
             self.log.error("滚动到元素{}失败：{}".format(e))
             raise e
 
-
-
-    def element_text(self, timeout=30, *loc):
+    def get_text(self, *loc, timeout=30):
         """
     定位元素，返回对象文本
         :param timeout: 等待元素超时时间
@@ -308,9 +277,7 @@ class Base_web():
             self.log.debug("返回文本失败-->{}".format(e))
             raise e
 
-
-
-    def element_attribute(self, attribute, timout=30, *loc):
+    def element_attribute(self, attribute, *loc, timout=30):
         """
     定位元素，返回对象属性值
         :param timout: 等待元素超时时间
@@ -333,9 +300,7 @@ class Base_web():
             self.log.error("返回{}属性值失败-->{}".format(loc, e))
             raise e
 
-
-
-    def element_object(self, timeout=30, *loc):
+    def element_object(self, *loc, timeout=30):
         """
     定位元素，返回对象
         :param loc: 元素信息
@@ -352,9 +317,7 @@ class Base_web():
             self.log.error("返回{}对象失败,错误信息是-->{}".format(e))
             raise e
 
-
-
-    def select(self, index, timeout=30, *loc):
+    def select(self, index, *loc, timeout=30):
         """
     操作select下拉框
         :param timeout: 等待元素超时时间
@@ -378,8 +341,6 @@ class Base_web():
                     self.log.error("下拉框{}选择失败-->{}".format(e))
                     raise e
 
-
-
     def execute_js(self, js):
         """
         执行js代码
@@ -389,9 +350,6 @@ class Base_web():
         result = self.driver.execute_script(js)
         self.log.debug("执行js成功")
         return result
-
-
-
 
     def send_keys(self, value, *loc, timeput=30):
         """
@@ -412,9 +370,7 @@ class Base_web():
             self.log.error("信息输入失败{}".format(e))
             raise e
 
-
-
-    def input_file_upload(self, file_path, timeout=30, *loc):
+    def input_file_upload(self, file_path, *loc, timeout=30):
         """
     input文件上传，file_path是要上传的文件目录名和文件名称，比如"pms_upload/excell.xlsx"，pms_upload对应框架中testData目录下的子目录，
     excell.xlsx是文件名。每个被测系统都有一个单独的子目录，用于存放需要上传的文件
@@ -433,9 +389,7 @@ class Base_web():
             self.log.error("文件输入失败{}".format(e))
             raise e
 
-
-
-    def switch_to_frame(self, timeout=30, *loc):
+    def switch_to_frame(self, *loc, timeout=30):
         """
     切换frame框架
         :param timeout: 等待元素超时时间
@@ -456,8 +410,6 @@ class Base_web():
                     self.log.error("框架不存在或者未显示{}".format(e))
                     raise e
 
-
-
     def switch_to_default(self):
         """
     切换到默认框架
@@ -465,16 +417,12 @@ class Base_web():
         self.driver.switch_to_default_content()
         self.log.debug("已切换到默认框架")
 
-
-
     def switch_to_parent(self):
         """
     切换到上一级框架
         """
         self.driver.switch_to.parent_frame()
         self.log.debug("已切换到上一级框架")
-
-
 
     def switch_to_window(self, num=-1):
         """
@@ -487,8 +435,6 @@ class Base_web():
             self.log.debug("窗口切换成功，当前窗口title是-->{}".format(self.driver.title))
             break
 
-
-
     def get_title(self):
         """
     获取当前页面的title并返回
@@ -498,9 +444,7 @@ class Base_web():
         self.log.debug('当前窗口的title是:%s' % title)
         return title
 
-
-
-    def mouse_hover(self, timeout=30, *loc):
+    def mouse_hover(self, *loc, timeout=30):
         """
         鼠标悬停到指定元素,如果失败等待两秒后再次操作，再次失败后将错误写入日志
         :param timeout: 等待元素超时时间
@@ -523,8 +467,6 @@ class Base_web():
                 except Exception as e:
                     self.log.error("鼠标悬停至{}失败-->{}".format(e))
                     raise e
-
-
 
     def element_info(self, sheetname, file_name="it_workOrder.xlsx"):
         """
@@ -549,8 +491,6 @@ class Base_web():
         xls1.release_resources()
         return data
 
-
-
     def is_display(self, *loc):
         """
     判断元素是否显示，显示返回True，不显示返回False
@@ -562,8 +502,6 @@ class Base_web():
             return True
         except:
             return False
-
-
 
     def run_command(self, filepath, section, key):
         """
@@ -577,16 +515,12 @@ class Base_web():
         r = requests.post('http://' + get_config_info(section, key) + '/execCommand', data=payload)
         self.log.debug("执行cmd成功")
 
-
-
     def keys_down(self):
         """
     键盘敲击'↓’键
         """
         ActionChains(self.driver).send_keys(Keys.ARROW_DOWN).perform()
         self.log.debug('键盘敲击↓键')
-
-
 
     def keys_tab(self):
         """
@@ -595,8 +529,6 @@ class Base_web():
         ActionChains(self.driver).send_keys(Keys.TAB).perform()
         self.log.debug('键盘敲击"TAB"键')
 
-
-
     def keys_enter(self):
         """
     键盘敲击回车
@@ -604,16 +536,12 @@ class Base_web():
         ActionChains(self.driver).send_keys(Keys.ENTER).perform()
         self.log.debug('键盘敲击回车')
 
-
-
     def keys_esc(self):
         """
     键盘敲击ESC
         """
         ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
         self.log.debug('键盘ESC')
-
-
 
     def linux_file_upload(self, file_path=None, section="firefox", key="host"):
         """
@@ -629,32 +557,30 @@ class Base_web():
         r = requests.get('http://' + host + '/webdriver/UPLOAD_ROBOT', params=payload)
         self.log.debug("文件上传成功-->{}".format(r.text))
 
+    # def screenshot(self, imgname):
+    #     """
+    # 主动截图，并将图片附到测试报告中
+    #     :param imgname: 图片名称
+    #     """
+    #     self.driver.get_screenshot_as_file(path.IMG_DIR + "/" + imgname)
+    #     HTML_IMG_TEMPLATE = """
+    #         <a href="data:image/png;base64, {}">
+    #         <img src="data:image/png;base64, {}" width="800px" height="500px"/>
+    #         </a>
+    #         <br></br>
+    #     """
+    #     # 图片路径
+    #     png = path.IMG_DIR
+    #
+    #     # 将图片发送到Html报告里。
+    #     data = BeautifulReport.img2base(png, imgname)
+    #     print(HTML_IMG_TEMPLATE.format(data, data))
+    #     print('<br></br>')
 
 
-    def screenshot(self, imgname):
-        """
-    主动截图，并将图片附到测试报告中
-        :param imgname: 图片名称
-        """
-        self.driver.get_screenshot_as_file(path.IMG_DIR + "/" + imgname)
-        HTML_IMG_TEMPLATE = """
-            <a href="data:image/png;base64, {}">
-            <img src="data:image/png;base64, {}" width="800px" height="500px"/>
-            </a>
-            <br></br>
-        """
-        # 图片路径
-        png = path.IMG_DIR
-
-        # 将图片发送到Html报告里。
-        data = BeautifulReport.img2base(png, imgname)
-        print(HTML_IMG_TEMPLATE.format(data, data))
-        print('<br></br>')
-
-# if __name__ == '__main__':
-#     driver = webdriver.Firefox()
-#     aa = (By.ID, 'kw1')
-#     dr = BasePage(driver)
-#     sleep(2)
-#     driver.find_element(By.LINK_TEXT, "hao123")
-#     driver.switch_to.alert.accept()
+if __name__ == '__main__':
+    driver = webdriver.Firefox()
+    aa = (By.ID, 'kw1')
+    sleep(2)
+    driver.find_element(By.LINK_TEXT, "hao123")
+    driver.switch_to.alert.accept()

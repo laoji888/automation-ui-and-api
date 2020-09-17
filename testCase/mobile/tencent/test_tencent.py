@@ -10,9 +10,9 @@ class Test_01(unittest.TestCase):
         dr = driver("huaweip20","腾讯新闻","appium01")
         loger = log("baidutest")
         home1 = home(dr, loger)
-        sleep(15)
-        home1.test01()
-        sleep(10)
+        # home1.test01()
+        home1.test02()
+        sleep(5)
         dr.quit()
 
 

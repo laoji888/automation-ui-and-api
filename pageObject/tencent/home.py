@@ -1,4 +1,7 @@
 import unittest
+
+from appium.webdriver.common.touch_action import TouchAction
+
 from common.driver_mobile import driver
 from common.logger import log
 from time import sleep
@@ -12,9 +15,21 @@ class home(Base_mobile):
         self.driver = driver
 
     def test01(self):
-        a = self.driver.find_element(*self.home["按钮-起始元素"])
-        b = self.driver.find_element(*self.home["按钮-终止元素"])
-        self.driver.scroll(a, b)
+        self.click(*self.home["按钮-我的"])
+        self.click(*self.home["按钮-设置"])
+        self.click(*self.home["单选框-夜间模式"])
+        sleep(2)
+        self.click(*self.home["单选框-夜间模式"])
+        sleep(1)
+        self.elements_click(0,*self.home["按钮-不随位置变化"])
+
+
+    def test02(self):
+        self.click(*self.home["搜索框-首页搜索框"])
+        self.send_keys("java", *self.home["搜索框-首页搜索框"])
+        sleep(3)
+        self.buttons(66)
+
 
 
 
