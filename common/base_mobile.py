@@ -1,3 +1,4 @@
+from time import sleep
 
 from appium.webdriver.common.touch_action import TouchAction
 from common.base_web import Base_web
@@ -51,6 +52,32 @@ KEYCODE_FORWARD_DEL 删除键112
         :param type: 对应时间的数字
         """
         self.driver.keyevent(type)
+
+
+    def swipe_bottom(self, id):
+        """
+滑动到底部
+        :param id: 要滑动页面的列表id
+        """
+        swipe = True
+        while (swipe):
+            # 滑动前元素列表
+            list1 = self.driver.find_elements_by_id(id)
+            # 滑动前最后一个元素信息
+            info1 = list1[-1].text
+            self.driver.swipe(500, 700, 500, 300)
+            sleep(2)
+            # 滑动后元素列表
+            list2 = self.driver.find_elements_by_id(id)
+            # 滑动后最后一个元素信息
+            info2 = list2[-1].text
+            print(info1 + "------" + info2)
+            if info1 != info2:
+                print("未滑动到底部，继续滑动")
+                self.driver.swipe(500, 700, 500, 300)
+            else:
+                print("已经滑动到底部了")
+                swipe = False
 
 
 
