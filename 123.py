@@ -63,15 +63,15 @@ import time
 import threading
 from time import sleep
 
-def aaa():
-    print("启动")
-    sleep(2)
-    print("结束")
 
+from testCase.mobile.email.swipe import Test_01
+aaa1 = ["mumu","夜神"]
 
-aaa1 = [10,20,30,40]
 for i in aaa1:
-    aa = threading.Thread(target=aaa)
+    aa = threading.Thread(target=Test_01().test,args=(i,))
+
     aa.start()
+
+
 
 
