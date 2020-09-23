@@ -12,28 +12,28 @@ import time
 # time.sleep(5)
 # driver.quit()
 
-# #执行机信息
-# from appium import webdriver
-# from appium.webdriver.common.touch_action import TouchAction
-# from common.util import get_config_info
-# from common.base_mobile import  Base_mobile
-# from common.logger import log
-#
-# capabilities = get_config_info("mumu", key=None, filename="/devices_info.ini")
-# #应用信息
-# app = get_config_info("邮箱大师", key=None, filename="/app_info.ini")
-# capabilities['appPackage'] = app["appPackage"]
-# capabilities['appActivity'] = app["appActivity"]
-#
-# #获取执行机调用地址
-# ip = get_config_info("mobile", key="appium01", filename="/host_config.ini")
-#
-# driver =  webdriver.Remote(ip, capabilities)
-# time.sleep(5)
-# loger = log("123")
-# Base_mobile(driver,log=loger).swipe_bottom("com.netease.mail:id/mail_list_item_from")
-# time.sleep(5)
-# driver.quit()
+#执行机信息
+from appium import webdriver
+from appium.webdriver.common.touch_action import TouchAction
+from common.util import get_config_info
+from common.base_mobile import  Base_mobile
+from common.logger import log
+
+# capabilities = get_config_info("huaweip20", key=None, filename="/devices_info.ini")
+capabilities = get_config_info("huaweip20", key=None, filename="/devices_info.ini")
+#应用信息
+app = get_config_info("邮箱大师", key=None, filename="/app_info.ini")
+capabilities['appPackage'] = app["appPackage"]
+capabilities['appActivity'] = app["appActivity"]
+
+#获取执行机调用地址
+
+driver =  webdriver.Remote("http://127.0.0.1:4723/wd/hub", capabilities)
+time.sleep(5)
+loger = log("123")
+Base_mobile(driver,log=loger).swipe_bottom("com.netease.mail:id/mail_list_item_from")
+time.sleep(5)
+driver.quit()
 # swaile = True
 # while(swaile):
 #     #滑动前元素列表
@@ -60,18 +60,23 @@ import time
 #
 # driver.quit
 
-import threading
-from time import sleep
-
-
-from testCase.mobile.email.swipe import Test_01
-aaa1 = ["mumu","夜神"]
-
-for i in aaa1:
-    aa = threading.Thread(target=Test_01().test,args=(i,))
-
-    aa.start()
-
+# import threading
+# from time import sleep
+#
+# from testCase.mobile.email.swipe import Test_01
+# aaa1 = ["mumu","夜神"]
+#
+# for i in aaa1:
+#     aa = threading.Thread(target=Test_01().test,args=(i,))
+#
+#     aa.start()
+# from common.util import get_config_info
+# exec_dict = get_config_info("exec", filename="/devices_info.ini")
+# exec_list = []
+# for k, v in exec_dict.items():
+#     exec_list.append(v)
+#
+# print(exec_list)
 
 
 

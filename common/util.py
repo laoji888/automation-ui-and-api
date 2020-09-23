@@ -3,14 +3,11 @@
 # @Author  : 纪亚男
 # 读取配置文件信息
 
-from configparser import ConfigParser
-
+import threading
+import yaml
 from configobj import ConfigObj
-
 from common import path
 import pymysql, cx_Oracle, sys
-
-
 filepath = path.CONFIG_DIR
 
 
@@ -29,6 +26,21 @@ def get_config_info(section, key=None, filename="/web_config.ini"):
         return dict(config[section])
     else:
         return config[section][key]
+
+
+def run_thread(function, section="exec",apth="/devices_info.ini"):
+    """
+多线程运行测试用例
+ps:需要在common包下的__init__.py中导入要测试的模块
+    :param function: 要装在的方法（测试用例）
+    :param section: 执行机列表（device_info.ini中的exec）
+    :param apth: 配置文件路径
+    """
+    exec_dict = get_config_info(section, filename=apth)
+    for k, v in exec_dict.items():
+        t = threading.Thread(target=function, args=(v,))
+        t.daemon = False
+        t.start()
 
 
 def operation_mysql(log, sql, databaseInfo="MySQL"):
