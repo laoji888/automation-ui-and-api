@@ -1,4 +1,7 @@
 from time import sleep
+
+from selenium.webdriver.common.by import By
+
 from common.base_mobile import Base_mobile
 
 
@@ -13,3 +16,7 @@ class Home(Base_mobile):
     def swipe(self):
         sleep(5)
         self.swipe_bottom("com.netease.mail:id/mail_list_item_from")
+        # self.click(*(By.XPATH,"//*[@text='GitHub']"))
+
+    def clilk_text(self):
+        self.click(*(By.XPATH,"//*[@text='GitHub']"))
