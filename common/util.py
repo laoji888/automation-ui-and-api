@@ -4,7 +4,6 @@
 # 读取配置文件信息
 
 import threading
-import yaml
 from configobj import ConfigObj
 from common import path
 import pymysql, cx_Oracle, sys

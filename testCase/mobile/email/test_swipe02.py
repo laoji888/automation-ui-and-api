@@ -6,8 +6,7 @@ from time import sleep
 from common.util import get_config_info
 
 
-class Test1():
-    logs = log("02")
+class Test1(unittest.TestCase):
 
     def tt001(self, device="mumu"):
         dr = driver(device, "邮箱大师")
@@ -23,3 +22,7 @@ class Test1():
             p = multiprocessing.Process(target=Test1().tt001, args=(v,))
             print("运行用例02，执行机：{}，进程名称是：{}".format(v, p.name))
             p.start()
+
+
+if __name__ == '__main__':
+    unittest.main()
