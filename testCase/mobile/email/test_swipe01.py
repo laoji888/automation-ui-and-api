@@ -8,29 +8,29 @@ from time import sleep
 
 
 class Test(unittest.TestCase):
-    def test_01(self, device="mumu"):
+    def t_01(self, device="mumu"):
         dr = driver(device, "邮箱大师")
         loger = log("baidutest")
         home1 = home.Home(dr, loger)
-        sleep(1)
+        sleep(5)
         home1.swipe()
-        print("111")
+        sleep(5)
         dr.quit()
 
-    def test_02(self, device="夜神"):
+    def t_02(self, device="夜神"):
         dr = driver(device, "邮箱大师")
         loger = log("baidutest1")
         home1 = home.Home(dr, loger)
         home1.clilk_text()
         dr.quit()
 
-    # def test_1(self):
-    #     # 实验多进程
-    #     dict = get_config_info("exec", filename="/devices_info.ini")
-    #     for k, v in dict.items():
-    #         p = multiprocessing.Process(target=Test().tt001, args=(v,))
-    #         print("运行用例01，执行机：{}，进程名称是：{}".format(v, p.name))
-    #         p.start()
+    def test_1(self):
+        # 实验多进程
+        dict = get_config_info("exec", filename="/devices_info.ini")
+        for k, v in dict.items():
+            p = multiprocessing.Process(target=Test().t_01, args=(v,))
+            print("运行用例01，执行机：{}，进程名称是：{}".format(v, p.name))
+            p.start()
 
 
 if __name__ == '__main__':

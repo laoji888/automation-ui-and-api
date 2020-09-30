@@ -12,7 +12,9 @@ class Test1(unittest.TestCase):
         dr = driver(device, "邮箱大师")
         loger = log("baidutest1")
         home1 = home.Home(dr, loger)
+        sleep(5)
         home1.clilk_text()
+        sleep(5)
         dr.quit()
 
     def test_2(self):
