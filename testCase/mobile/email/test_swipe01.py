@@ -17,6 +17,8 @@ class Test(unittest.TestCase):
         sleep(5)
         dr.quit()
 
+
+
     def t_02(self, device="夜神"):
         dr = driver(device, "邮箱大师")
         loger = log("baidutest1")

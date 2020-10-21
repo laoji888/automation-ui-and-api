@@ -14,7 +14,7 @@ class Test1(unittest.TestCase):
         home1 = home.Home(dr, loger)
         sleep(5)
         home1.clilk_text()
-        sleep(5)
+        sleep(2)
         dr.quit()
 
     def test_2(self):
