@@ -2,8 +2,10 @@
 # @Date      : 2020-05-19
 # @Author  : 纪亚男
 # 读取配置文件信息
-
+import multiprocessing
 import threading
+
+import yaml
 from configobj import ConfigObj
 from common import path
 import pymysql, cx_Oracle, sys
@@ -120,6 +122,18 @@ def get_yaml_data(yaml_file):
     print(data)
     print("类型：", type(data))
     return data
+
+def multiprocess(func):
+    def wrapper(*args, **kwargs):
+        dict = get_config_info("exec", filename="/devices_info.ini")
+        # fc = dill.dumps(func)
+        for k, v in dict.items():
+            print(v)
+            p = multiprocessing.Process(target=func, args=(v,))
+            # p = threading.Thread(target=func, args=(v,))
+            p.start()
+        return func(*args, **kwargs)
+    return wrapper
 
 
 
