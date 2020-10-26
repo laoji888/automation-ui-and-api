@@ -19,7 +19,7 @@ class BaiduHome(Base_web):
     # 这是页面下的某个功能点，对应到某个系统下某个页面的功能，比如进入待办功能，
     def search(self, value):
         # 百度搜索java
-        self.send_keys(value, *self.home["输入框-百度搜索框"])
+        self.send_keys(value, *self.home["搜索框-百度搜索框"])
         self.log.info("在输入框输入-->{}".format(value))
         self.click(*self.home["按钮-百度一下"])
         sleep(2)
