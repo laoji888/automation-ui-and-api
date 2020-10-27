@@ -17,7 +17,7 @@ class TestBaidu(unittest.TestCase):
 
 
     @multiprocess
-    def test_home(self,browser="firefox"):
+    def test_home(self,browser):
         self.browser = Driver(browser=browser, system="baidu")
         self.driver = self.browser.driver
         self.log = self.browser.log

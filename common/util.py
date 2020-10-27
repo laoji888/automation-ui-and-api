@@ -128,7 +128,7 @@ def multiprocess(func):
         dict = get_config_info("web", filename="/devices_info.ini")
         for k, v in dict.items():
             print(v)
-            p = multiprocessing.Process(target=func)
+            p = multiprocessing.Process(target=func, args=(v,))
             # p = threading.Thread(target=func, args=(v,))
             p.start()
         return func(*args, **kwargs)
