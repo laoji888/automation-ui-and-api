@@ -22,8 +22,8 @@ class Base_web():
     def __init__(self, driver, log):
         """
     初始化浏览器对象
-        :param logname: 运行测试场景时生成的log文件名
-        :param driver: 浏览器对象
+        :param log:
+        :param driver:
         """
         self.driver = driver
         self.log = log

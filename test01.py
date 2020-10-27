@@ -1,16 +1,8 @@
-import functools, dill
-import multiprocessing
-import threading
-import time
-
-from common.util import get_config_info
-import unittest, pytest, multiprocessing
-from pageObject.email import home
+import unittest
+from pageObject.mobile.email import home
 from common.driver_mobile import driver
 from common.logger import log
 from time import sleep
-from common.util import get_config_info
-from pathos.multiprocessing import ProcessingPool as Pool
 from common.util import multiprocess
 
 

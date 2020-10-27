@@ -43,5 +43,5 @@ def file_path(dir_name, file_name):
     return FILE_PATH
 
 if __name__ == '__main__':
-    print(HTML_REPORT_DIR)
+    print(BASE_DIR)
 

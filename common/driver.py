@@ -2,12 +2,17 @@
 # @Date      : 2020-05-19
 # @Author  : 纪亚男
 # 选择并启动对应的浏览器
-
+import os
+import time
 from selenium import webdriver
+
+from common import path
 from common.util import get_config_info
+from common.logger import log
 
 
-class Driver_web():
+
+class Driver():
     """
     启动浏览器
     利用get_config_info方法读取url地址和执行机信息，先判断要启动的浏览器类型在启动对应的浏览器,
@@ -15,23 +20,37 @@ class Driver_web():
     ps:要在config下的configInfo下配置执行机的ip
     """
 
-    def __init__(self, browser, system, section="seleniumHub", key="host", timeout=30):
+    def __init__(self, browser=None, device=None, system=None, timeout=30):
         """
-    初始化driver类
+    初始化driver类,以下参数需要在config目录下的配置文件中配置
         :param browser: 要启动的浏览器类型
-        :param system: 要打开的系统（配置文件中的section）
-        :param section: 要启动的执行机（配置文件中的section）
-        :param key: 要启动的执行机IP和端口（配置文件中的key）
+        :param device: 移动端执行机
+        :param system: 要启动的系统
         :param timeout: 超时时间
         """
-        self.url = get_config_info(system, "URL")
+        self.device = device
+        self.system = system
+        self.log = log(logname=device + "-" + system, system=self.system)
         self.browser = browser
-        self.driver = " "
-        self.section = section
-        self.key = key
+        self.driver = ""
         self.timeout = timeout
-        self.browser_type()
-        self.open_browser()
+        self.type()
+
+    def type(self):
+        if self.browser != None:
+            self.browser_type()
+            self.open_browser()
+        else:
+            # 执行机信息
+            capabilities = get_config_info(self.device, key=None, filename="/devices_info.ini")
+            # 应用信息
+            app = get_config_info(self.system, key=None, filename="/app_info.ini")
+            capabilities['appPackage'] = app["appPackage"]
+            capabilities['appActivity'] = app["appActivity"]
+            from appium import webdriver
+            self.driver = webdriver.Remote(get_config_info("appiumGrid", key="host", filename="config.ini"),
+                                      capabilities)
+
 
     def browser_type(self):
         """
@@ -41,7 +60,7 @@ class Driver_web():
             option = webdriver.FirefoxProfile()
             # 其中plugin.state.flash后的数值可以为0,1,2； 0：禁止，1：询问，2：允许。
             option.set_preference('plugin.state.flash', 2)
-            self.host = 'http://' + get_config_info(self.section, self.key) + '/wd/hub'
+            self.host = get_config_info("seleniumGrid", "host")
             self.driver = webdriver.Remote(command_executor=self.host,
                                            desired_capabilities={'platform': 'ANY',
                                                                  'browserName': 'firefox',
@@ -51,7 +70,7 @@ class Driver_web():
                                            browser_profile=option
                                            )
         elif self.browser == "ie":
-            self.host = 'http://' + get_config_info(self.section, self.key) + '/wd/hub'
+            self.host =get_config_info("seleniumGrid", "host")
             self.driver = webdriver.Remote(command_executor=self.host,
                                            desired_capabilities={'platform': 'ANY',
                                                                  'browserName': 'internet explorer',
@@ -60,7 +79,7 @@ class Driver_web():
                                                                  }
                                            )
         elif self.browser == "chrome":
-            self.host = 'http://' + get_config_info(self.section, self.key) + '/wd/hub'
+            self.host = get_config_info("seleniumGrid", "host")
             self.driver = webdriver.Remote(command_executor=self.host,
                                            desired_capabilities={'platform': 'ANY',
                                                                  'browserName': 'chrome',
@@ -75,7 +94,7 @@ class Driver_web():
         """
     打开URL设置窗口最大化并等待全部元素加载完成
         """
-        self.driver.get(self.url)
+        self.driver.get(get_config_info(self.system, "URL"))
         self.driver.maximize_window()
         self.driver.implicitly_wait(self.timeout)
 

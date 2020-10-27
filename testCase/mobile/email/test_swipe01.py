@@ -1,15 +1,14 @@
-import unittest, pytest, threading, multiprocessing
-from pageObject.email import home
-from common.driver_mobile import driver
+import unittest, multiprocessing
+from pageObject.mobile.email import home
+from common.driver import Driver
 from common.logger import log
-from time import sleep
-from common.util import get_config_info, run_thread
+from common.util import get_config_info
 from time import sleep
 
 
 class Test(unittest.TestCase):
     def t_01(self, device="mumu"):
-        dr = driver(device, "邮箱大师")
+        dr = Driver(device="huaweip20", system="邮箱大师").driver
         loger = log("baidutest")
         home1 = home.Home(dr, loger)
         sleep(5)

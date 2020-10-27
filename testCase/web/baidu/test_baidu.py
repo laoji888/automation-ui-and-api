@@ -5,15 +5,14 @@
 
 import warnings
 import unittest
-from common import path
-from pageObject.baidu.baidu_home import BaiduHome
-from common.driver_web import Driver_web
+from pageObject.web.baidu.baidu_home import BaiduHome
+from common.driver import Driver_web
 from common.logger import log
 
 class TestBaidu(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter("ignore", ResourceWarning)
-        self.browser = Driver_web("firefox", "baidu")
+        self.browser = Driver_web(browser="firefox", system="baidu")
         self.log = log("baidutest")
 
 

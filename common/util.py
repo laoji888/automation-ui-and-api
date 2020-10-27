@@ -12,7 +12,7 @@ import pymysql, cx_Oracle, sys
 filepath = path.CONFIG_DIR
 
 
-def get_config_info(section, key=None, filename="/web_config.ini"):
+def get_config_info(section, key=None, filename="/config.ini"):
     """
 获取.ini文件信息,如果key为空时返回section下的所有信息，以字典的方式输出
 如果key不为空时返回section下的key的值，以字符串的方式输出
@@ -128,8 +128,8 @@ def multiprocess(func):
         dict = get_config_info("exec", filename="/devices_info.ini")
         for k, v in dict.items():
             print(v)
-            p = multiprocessing.Process(target=func, args=(v,))
-            # p = threading.Thread(target=func, args=(v,))
+            # p = multiprocessing.Process(target=func, args=(v,))
+            p = threading.Thread(target=func, args=(v,))
             p.start()
         return func(*args, **kwargs)
     return wrapper

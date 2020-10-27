@@ -1,13 +1,13 @@
 import unittest
-from pageObject.tencent.home import home
-from common.driver_mobile import driver
+from pageObject.mobile.tencent.home import home
+from common.driver import Driver
 from common.logger import log
 from time import sleep
 
 class Test_01(unittest.TestCase):
 
     def test(self):
-        dr = driver("huaweip20","腾讯新闻","appium01")
+        dr = Driver(device="huaweip20", system="腾讯新闻").driver
         loger = log("baidutest")
         home1 = home(dr, loger)
         # home1.test01()
