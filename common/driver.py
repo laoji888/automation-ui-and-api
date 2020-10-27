@@ -20,7 +20,7 @@ class Driver():
     ps:要在config下的configInfo下配置执行机的ip
     """
 
-    def __init__(self, browser=None, device=None, system=None, timeout=30):
+    def __init__(self, browser="null", device="null", system="null", timeout=30):
         """
     初始化driver类,以下参数需要在config目录下的配置文件中配置
         :param browser: 要启动的浏览器类型
@@ -30,14 +30,18 @@ class Driver():
         """
         self.device = device
         self.system = system
-        self.log = log(logname=device + "-" + system, system=self.system)
+        self.log = ""
         self.browser = browser
         self.driver = ""
         self.timeout = timeout
         self.type()
 
     def type(self):
-        if self.browser != None:
+        if self.device != "null":
+            self.log = log(logname=self.device + "-" + self.system, system=self.system)
+        else:
+            self.log = log(logname=self.browser + "-" + self.system, system=self.system)
+        if self.browser != "null":
             self.browser_type()
             self.open_browser()
         else:
