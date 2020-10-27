@@ -17,13 +17,13 @@ class TestBaidu(unittest.TestCase):
 
 
     @multiprocess
-    def test_home(self,browser):
-        self.browser = Driver(browser=browser, system="baidu")
-        self.driver = self.browser.driver
-        self.log = self.browser.log
+    def test_home(self,browser="firefox"):
+        browser = Driver(browser=browser, system="baidu")
+        self.driver = browser.driver
+        self.log = browser.log
         self.driver_home = BaiduHome(self.driver, self.log)
         self.driver_home.search("java")
-        self.browser.quit_browser()
+        browser.quit_browser()
 
 
     def tearDown(self):

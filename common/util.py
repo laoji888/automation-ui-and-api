@@ -126,6 +126,7 @@ def get_yaml_data(yaml_file):
 def multiprocess(func):
     def wrapper(*args, **kwargs):
         dict = get_config_info("web", filename="/devices_info.ini")
+        print(dict)
         for k, v in dict.items():
             print(v)
             p = multiprocessing.Process(target=func, args=(v,))
