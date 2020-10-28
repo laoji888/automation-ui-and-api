@@ -20,8 +20,8 @@ def test_home(browser1):
     log = browser.log
     driver_home = BaiduHome(driver, log)
     time.sleep(5)
-    driver_home.set()
-    # driver_home.search("java")
+    # driver_home.set()
+    driver_home.search("java")
     browser.quit_browser()
 
 if __name__ == '__main__':
