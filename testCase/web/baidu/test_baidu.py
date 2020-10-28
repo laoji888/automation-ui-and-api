@@ -3,6 +3,7 @@
 # @Author  : 纪亚男
 # Sample场景： 运行百度测试场景
 import multiprocessing
+import time
 import warnings
 import unittest
 from pageObject.web.baidu.baidu_home import BaiduHome
@@ -19,6 +20,7 @@ class TestBaidu:
         self.log = browser.log
         self.driver_home = BaiduHome(self.driver, self.log)
         self.driver_home.search("java")
+        time.sleep(5)
         browser.quit_browser()
 
 if __name__ == '__main__':
@@ -28,4 +30,4 @@ if __name__ == '__main__':
         print(v)
         p = multiprocessing.Process(target=TestBaidu().test_home, args=(v,))
         p.start()
-        p.join()
+
