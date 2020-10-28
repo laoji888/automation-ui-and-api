@@ -6,24 +6,28 @@
 import warnings
 import unittest
 from pageObject.web.baidu.baidu_home import BaiduHome
-from common.driver import Driver_web
-from common.logger import log
+from common.driver import Driver
+from common.util import multiprocess
+
 
 class TestBaidu(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter("ignore", ResourceWarning)
-        self.browser = Driver_web(browser="firefox", system="baidu")
-        self.log = log("baidutest")
 
 
-    def test_home(self):
-        self.driver = self.browser.driver
+
+    @multiprocess
+    def test_home(self,browser="firefox"):
+        browser = Driver(browser=browser, system="baidu")
+        self.driver = browser.driver
+        self.log = browser.log
         self.driver_home = BaiduHome(self.driver, self.log)
         self.driver_home.search("java")
+        browser.quit_browser()
 
 
     def tearDown(self):
-        self.browser.quit_browser()
+        pass
 
 if __name__ == '__main__':
     unittest.main()

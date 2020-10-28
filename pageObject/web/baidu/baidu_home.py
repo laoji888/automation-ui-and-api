@@ -12,7 +12,7 @@ from common import path
 # 继承BasePage类
 class BaiduHome(Base_web):
     def __init__(self, driver, log):
-        self.home = self.element_info("home_page", file_name="web\\baidu\\baidu_elements.xlsx")
+        self.home = self.element_info("home_page", file_name="web/baidu/baidu_elements.xlsx")
         super().__init__(driver, log)
         self.log = log
 
@@ -22,7 +22,6 @@ class BaiduHome(Base_web):
         self.send_keys(value, *self.home["搜索框-百度搜索框"])
         self.log.info("在输入框输入-->{}".format(value))
         self.click(*self.home["按钮-百度一下"])
-        self.log.info("点击百度一下")
         sleep(2)
 
     def set(self):
