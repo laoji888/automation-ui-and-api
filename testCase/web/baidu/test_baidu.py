@@ -11,23 +11,19 @@ from common.driver import Driver
 from common.util import *
 
 
-class TestBaidu:
-    @multiprocess
-    def test_home(self,browser):
-        warnings.simplefilter("ignore", ResourceWarning)
-        browser = Driver(browser=browser, system="baidu")
-        self.driver = browser.driver
-        self.log = browser.log
-        self.driver_home = BaiduHome(self.driver, self.log)
-        self.driver_home.search("java")
-        time.sleep(5)
-        browser.quit_browser()
+
+@multiprocess
+def test_home(browser1):
+    warnings.simplefilter("ignore", ResourceWarning)
+    browser = Driver(browser=browser1, system="baidu")
+    driver = browser.driver
+    log = browser.log
+    driver_home = BaiduHome(driver, log)
+    time.sleep(5)
+    driver_home.set()
+    # driver_home.search("java")
+    browser.quit_browser()
 
 if __name__ == '__main__':
-    dict = get_config_info("web", filename="devices_info.ini")
-    print(dict)
-    for k, v in dict.items():
-        print(v)
-        p = multiprocessing.Process(target=TestBaidu().test_home, args=(v,))
-        p.start()
+    test_home()
 

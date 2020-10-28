@@ -100,7 +100,7 @@ def multiprocess(func):
             print(v)
             p = multiprocessing.Process(target=func, args=(v,))
             p.start()
-        return func(*args, **kwargs)
+        # return func(*args, **kwargs)
     return wrapper
 
 
