@@ -1,25 +1,26 @@
+import multiprocessing
 import unittest
 from pageObject.mobile.email import home
 from common.driver_mobile import driver
 from common.logger import log
 from time import sleep
-from common.util import multiprocess
+from common.util import get_config_info
 
 
-class tt(unittest.TestCase):
-    @multiprocess
-    def test_1(self, device):
-        dr = driver(device, "邮箱大师")
-        loger = log("baidutest1")
-        home1 = home.Home(dr, loger)
-        sleep(5)
-        home1.clilk_text()
-        sleep(2)
-        dr.quit()
+def multiprocess(func):
+    def wrapper(*args, **kwargs):
+        dict = get_config_info("web", filename="devices_info.ini")
+        print(dict)
+        for k, v in dict.items():
+            print(v)
+            p = multiprocessing.Process(target=func, args=(v,))
+            p.start()
+            p.join()
+        return func(*args, **kwargs)
+    return wrapper
 
-if __name__ == '__main__':
-    unittest.main()
-    '''
-        解决思路：pathos模块
-        pathos是一个较为综合性的模块，既能多进程，也能多线程。其主要采用进程池/线程池方法。
-    '''
+
+
+
+
+

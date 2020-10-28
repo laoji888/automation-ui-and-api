@@ -46,9 +46,9 @@ class Driver():
             self.open_browser()
         else:
             # 执行机信息
-            capabilities = get_config_info(self.device, key=None, filename="/devices_info.ini")
+            capabilities = get_config_info(self.device, key=None, filename="devices_info.ini")
             # 应用信息
-            app = get_config_info(self.system, key=None, filename="/app_info.ini")
+            app = get_config_info(self.system, key=None, filename="app_info.ini")
             capabilities['appPackage'] = app["appPackage"]
             capabilities['appActivity'] = app["appActivity"]
             from appium import webdriver
@@ -110,7 +110,7 @@ class Driver():
 
 
 if __name__ == '__main__':
-    dr = Driver_web("firefox", "baidu")
+    dr = Driver("firefox", "baidu")
     from time import sleep
 
     sleep(3)

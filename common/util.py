@@ -10,7 +10,7 @@ import pymysql, cx_Oracle, sys
 filepath = path.CONFIG_DIR
 
 
-def get_config_info(section, key=None, filename="/config.ini"):
+def get_config_info(section, key=None, filename="config.ini"):
     """
 获取.ini文件信息,如果key为空时返回section下的所有信息，以字典的方式输出
 如果key不为空时返回section下的key的值，以字符串的方式输出
@@ -25,21 +25,6 @@ def get_config_info(section, key=None, filename="/config.ini"):
         return dict(config[section])
     else:
         return config[section][key]
-
-
-def run_thread(function, section="exec",apth="/devices_info.ini"):
-    """
-多线程运行测试用例
-ps:需要在common包下的__init__.py中导入要测试的模块
-    :param function: 要装在的方法（测试用例）
-    :param section: 执行机列表（device_info.ini中的exec）
-    :param apth: 配置文件路径
-    """
-    exec_dict = get_config_info(section, filename=apth)
-    for k, v in exec_dict.items():
-        t = threading.Thread(target=function, args=(v,))
-        t.daemon = False
-        t.start()
 
 
 def operation_mysql(log, sql, databaseInfo="MySQL"):
@@ -109,12 +94,11 @@ def operation_oracle(log, sql, databaseInfo="Oracle"):
 
 def multiprocess(func):
     def wrapper(*args, **kwargs):
-        dict = get_config_info("web", filename="/devices_info.ini")
+        dict = get_config_info("web", filename="devices_info.ini")
         print(dict)
         for k, v in dict.items():
             print(v)
             p = multiprocessing.Process(target=func, args=(v,))
-            # p = threading.Thread(target=func, args=(v,))
             p.start()
         return func(*args, **kwargs)
     return wrapper

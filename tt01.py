@@ -1,4 +1,12 @@
 
 import time
+from test01 import multiprocess
 
-print(type(time.strftime("%Y/%m/%d-%H:%M:%S", time.localtime())))
+class aa:
+
+    @multiprocess
+    def tt(self,name):
+        print(name)
+
+if __name__ == '__main__':
+    aa().tt()

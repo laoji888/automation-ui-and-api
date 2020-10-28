@@ -2,22 +2,18 @@
 # @Date      : 2020-05-27
 # @Author  : 纪亚男
 # Sample场景： 运行百度测试场景
-
+import multiprocessing
 import warnings
 import unittest
 from pageObject.web.baidu.baidu_home import BaiduHome
 from common.driver import Driver
-from common.util import multiprocess
+from common.util import get_config_info
 
 
-class TestBaidu(unittest.TestCase):
-    def setUp(self):
+class TestBaidu:
+    # @multiprocess
+    def test_home(self,browser):
         warnings.simplefilter("ignore", ResourceWarning)
-
-
-
-    @multiprocess
-    def test_home(self,browser="firefox"):
         browser = Driver(browser=browser, system="baidu")
         self.driver = browser.driver
         self.log = browser.log
@@ -25,9 +21,11 @@ class TestBaidu(unittest.TestCase):
         self.driver_home.search("java")
         browser.quit_browser()
 
-
-    def tearDown(self):
-        pass
-
 if __name__ == '__main__':
-    unittest.main()
+    dict = get_config_info("web", filename="devices_info.ini")
+    print(dict)
+    for k, v in dict.items():
+        print(v)
+        p = multiprocessing.Process(target=TestBaidu().test_home, args=(v,))
+        p.start()
+        p.join()
