@@ -8,11 +8,11 @@ import warnings
 import unittest
 from pageObject.web.baidu.baidu_home import BaiduHome
 from common.driver import Driver
-from common.util import get_config_info
+from common.util import *
 
 
 class TestBaidu:
-    # @multiprocess
+    @multiprocess
     def test_home(self,browser):
         warnings.simplefilter("ignore", ResourceWarning)
         browser = Driver(browser=browser, system="baidu")
