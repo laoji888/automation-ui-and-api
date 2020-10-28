@@ -93,14 +93,13 @@ def operation_oracle(log, sql, databaseInfo="Oracle"):
 
 
 def multiprocess(func):
-    def wrapper(*args, **kwargs):
+    def wrapper():
         dict = get_config_info("web", filename="devices_info.ini")
         print(dict)
         for k, v in dict.items():
             print(v)
             p = multiprocessing.Process(target=func, args=(v,))
             p.start()
-        # return func(*args, **kwargs)
     return wrapper
 
 
