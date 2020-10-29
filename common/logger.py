@@ -17,9 +17,12 @@ def log(logname="自动化测试", system=""):
     :param logname: log文件名
     :return:
     """
+    file = system
+    if system == "":
+        file = "interfase"
     # 如果没有对应的日志目录和文件就新建
     if not os.path.exists(path.LOG_DIR): os.mkdir(path.LOG_DIR)
-    LOG_DIR = os.path.join(path.LOG_DIR, system).replace('\\', '/')
+    LOG_DIR = os.path.join(path.LOG_DIR, file).replace('\\', '/')
     if not os.path.exists(LOG_DIR): os.mkdir(LOG_DIR)
 
     # 创建一个logger

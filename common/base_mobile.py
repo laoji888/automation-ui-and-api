@@ -27,6 +27,7 @@ class Base_mobile(Base_web):
         height = self.driver.get_window_size()['height']
 
         #滑动屏幕
+
         # actions = TouchAction(self.driver)
         # actions.press(x=width*start_x, y=height*start_y).wait(2)
         # actions.move_to(x=width*end_x, y=height*end_y)

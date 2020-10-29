@@ -31,6 +31,8 @@ PATH_DIR = os.path.join(BASE_DIR,"common","/path.py").replace('\\','/')
 UPLOAD_DIR = "/app/newland/usmb/uploadfile/"
 # html测试报告路径
 HTML_REPORT_DIR = os.path.join(BASE_DIR,"html_report/").replace('\\','/')
+# api接口文档路径
+API_DOCUMENT = os.path.join(BASE_DIR,"apiData/").replace('\\','/')
 
 def file_path(dir_name, file_name):
     """
