@@ -3,7 +3,6 @@ from common.logger import log
 import xlrd, requests, unittest, time, json, pymysql
 from common import path
 
-
 log = log(logname="api", system="interfase")
 
 
@@ -16,56 +15,37 @@ log = log(logname="api", system="interfase")
 class Base_api():
 
     #  初始化方法
-    def __init__(self, s_url, s_data, filepath, param_sheet, assert_sheet):
+    def __init__(self, filepath, sheet_name):
         """
         初始化方法
-        :param self.dir_case: 参数文件存放路径
-        :param s_url: 登录接口url
-        :param s_data: 登录接口的参数
-        :param url: 请求地址
         :param filepath:  存放参数的Excel文件名及后缀
-        :param param_sheet: 要遍历的参数sheet页下标
-        :param asset: 要遍历的断言sheet页下标
+        :param sheet_name: 要遍历的参数sheet页名字
         """
-        self.dir_case = path.API_DOCUMENT + '/' + filepath
-        self.s_url = s_url
-        self.s_data = s_data
-        self.filepath = filepath
-        self.param = param_sheet
-        self.assert_sheet = assert_sheet
         self.header = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) '
                           'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36',
             'Accept': 'application/json, text/javascript, */*'}
-
+        self.file = path.API_DOCUMENT + '/' + filepath
+        self.sheet_name = sheet_name
+        self.data = xlrd.open_workbook(self.file)
         self.nrow = 1
         self.ast = unittest.TestCase()  # 使用unittest框架下的断言
 
+        # 接口地址
+        self.url = ""  # 请求地址
+        self.parameter = {}  # 请求参数
+        self.method = ""  # 请求方法
+        self.cmd = ""  # 获取实际结果的命令
+        self.expect = ""  # 预期结果
 
+        self.exec_queue = [self.sheet_name]  # 接口执行队列
 
-    # 获取url
-    def get_url(self, nrows=0, ncols=0):
+    def _get_all_data(self, name):
         """
-        获取url地址
-        :param nrows: 行
-        :param ncols: 列
-        :return:
+        读取Excel里配置好的接口数据
         """
-        data = xlrd.open_workbook(self.dir_case)
-        table = data.sheets()[self.assert_sheet]
-        url = table.cell_value(nrows, ncols)
-        log.debug("打开路径为： %s 的文件第：%s页，获取到的数据是：%s" % (self.dir_case, self.assert_sheet, url))
-        log.info("获取url路径成功，地址第：%s" % url)
-        return url
-
-    # 遍历xlsx文件的参数，并以字典类型输出
-    def get_data(self):
-        """
-        读取Excel里配置好的接口参数，以字典的方式存放
-        """
-        data = xlrd.open_workbook(self.dir_case)
-        table = data.sheets()[self.param]
-        log.debug("参数文件路径是:%s,打开文件第:%s页" % (self.dir_case, self.param))
+        table = self.data.sheet_by_name(name)
+        log.debug("打开:{},下的[{}]页".format(self.file, self.sheet_name))
         nor = table.nrows  # 行
         nol = table.ncols  # 列
         dict = {}
@@ -86,7 +66,45 @@ class Base_api():
                 dict[title] = value
                 log.debug("获取到的参数名是:%s,参数值是:%s" % (title, value))
             yield dict
-        log.info("参数读取成功")
+
+
+    def _get_exec_queue(self):
+        """
+获取执行队列
+        """
+        for i in self.exec_queue:
+            for i in self._get_all_data(i):
+                if i["rely"] != "":
+                    self.exec_queue.append(i["rely"])
+                else:
+                    self.exec_queue.reverse()
+                    break
+
+    def run(self):
+        """
+根据接口文档信息自动运行对应的请求请求
+        """
+        self._get_exec_queue() # 获取执行队列（接口依赖关系）
+
+        for i in self.exec_queue: # 遍历执行队列
+            for i in self._get_all_data(i): # 遍历单个接口所有数据
+                if len(self.exec_queue) > 1: # 依赖执行，只执行第一行
+                    if i["url"] != "": # 判断是不是第一行
+                        if i["method"] == "get": # 判断请求的方法
+                            pass
+                        if i["method"] == "post": # 判断请求的方法
+                            pass
+                        if i["method"] == "get": # 判断请求的方法
+                            pass
+                        if i["method"] == "get": # 判断请求的方法
+                            pass
+                else: # 不是依赖执行，遍历所有测试场景
+                    pass
+        '''
+        执行接口测试思路：
+            判断是否是依赖执行的，如果是只执行第一行的正向测试用例，否则全部执行。
+            判断self.exec_queue的个数实现，如果大于1个元素就是依赖执行，否则不是，执行完依赖执行后删除self.exec_queue中已执行的元素
+        '''
 
 
     # 读取excl，获得实际结果命令和预期结果
@@ -120,7 +138,6 @@ class Base_api():
         :return: 返回删除空值的键值对后的字典
         """
 
-
         t = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime())
         xx = data
         for k in list(data.keys()):
@@ -147,7 +164,6 @@ class Base_api():
         log.debug("登录请求成功")
         response = s.get(url=self.s_url, params=self.s_data)
         response_json = response.json()
-
 
         try:
             token = response_json['data']['token']
@@ -216,8 +232,6 @@ class Base_api():
         nrows = table.nrows
         url = self.get_url()
 
-
-
         for i in range(1, nrows):
             data_list = table.row_values(i)
             data_str = str(data_list)
@@ -273,25 +287,5 @@ class Base_api():
 
 
 if __name__ == '__main__':
-    # u = "http://120.52.157.131:58080/apis/zznode-csm/cms/login"
-    # dat = {'username': 'qiaolin', 'password': '8579173b7f0ad165551bf8e892d3dee7'}
-    # run = Base_api(u, dat, 'single.xlsx', 0, 1)
-    # run.run_get()
-
-    # url = "http://120.52.157.131:58080/apis/zznode-csm/cms/login"
-    # data = {'username': 'qiaolin', 'password': '8579173b7f0ad165551bf8e892d3dee7'}
-    # run = base(url, data, 'single.xlsx', 2, 3)
-    # run.run_post()
-
-    # url = "http://120.52.157.131:58080/apis/zznode-csm/cms/login"
-    # run = base(url, 'single.xlsx', 3, 2)
-    # for i in run.get_data():
-    #     print(i,type(i))
-
-    url = "http://120.52.157.131:58080/apis/zznode-csm/cms/login"
-    data = {'username': 'qiaolin', 'password': '8579173b7f0ad165551bf8e892d3dee7'}
-    run = Base_api(url, data, 'single.xlsx', 0, 1)
-    d = run.get_data()
-    for i in d:
-        print(i)
-        print(type(i))
+    run = Base_api('test.xlsx', "Sheet4")
+    run.run() # 现在可以获取文档依赖关系。
