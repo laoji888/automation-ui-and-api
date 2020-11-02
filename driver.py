@@ -20,9 +20,6 @@
 # time.sleep(5)
 # driver.quit()
 
-a = [10,20]
-print(a)
-a.append("12")
-print(a)
-a.reverse()
+a = {"appName":"测试接口添加","osType":"Web","appUrl":"test","elementTimeout":"30","pageTimeout":"30","appPackage":'null'}
+del a["appName"]
 print(a)

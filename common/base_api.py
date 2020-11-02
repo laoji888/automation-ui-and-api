@@ -40,12 +40,13 @@ class Base_api():
 
         self.exec_queue = [self.sheet_name]  # 接口执行队列
 
+    #  获取sheet页下的所有数据
     def _get_all_data(self, name):
         """
         读取Excel里配置好的接口数据
         """
         table = self.data.sheet_by_name(name)
-        log.debug("打开:{},下的[{}]页".format(self.file, self.sheet_name))
+        log.debug("打开:{},下的[{}]页".format(self.file, name))
         nor = table.nrows  # 行
         nol = table.ncols  # 列
         dict = {}
@@ -67,19 +68,20 @@ class Base_api():
                 log.debug("获取到的参数名是:%s,参数值是:%s" % (title, value))
             yield dict
 
-
+    #  获取接口间的依赖关系
     def _get_exec_queue(self):
         """
 获取执行队列
         """
         for i in self.exec_queue:
-            for i in self._get_all_data(i):
-                if i["rely"] != "":
-                    self.exec_queue.append(i["rely"])
+            for j in self._get_all_data(i):
+                if j["rely"] != "":
+                    self.exec_queue.append(j["rely"])
                 else:
                     self.exec_queue.reverse()
                     break
 
+    #  运行测试
     def run(self):
         """
 根据接口文档信息自动运行对应的请求请求
@@ -87,25 +89,50 @@ class Base_api():
         self._get_exec_queue() # 获取执行队列（接口依赖关系）
 
         for i in self.exec_queue: # 遍历执行队列
-            for i in self._get_all_data(i): # 遍历单个接口所有数据
-                if len(self.exec_queue) > 1: # 依赖执行，只执行第一行
-                    if i["url"] != "": # 判断是不是第一行
-                        if i["method"] == "get": # 判断请求的方法
-                            pass
-                        if i["method"] == "post": # 判断请求的方法
-                            pass
-                        if i["method"] == "get": # 判断请求的方法
-                            pass
-                        if i["method"] == "get": # 判断请求的方法
-                            pass
+            for j in self._get_all_data(i): # 遍历单个接口所有数据
+                if self.exec_queue[-1] != i: # 依赖执行，只执行第一行
+                    if j["url"] != "": # 判断是不是第一行
+                        self.url = j["url"]
+                        self.method = j["method"]
+                        self.cmd = j["cmd"]
+                        self.expect = j["expect"]
+
+                        del j["url"]
+                        del j["method"]
+                        del j["cmd"]
+                        del j["expect"]
+                        del j["rely"]
+                        self.parameter = j
+                        if self.method == "post": # 判断请求的方法
+                            r = requests.post(self.url, data=self.parameter)
+                            print(r.text)
+                            print(r.status_code)
+                            print(self.exec_queue)
+                            print("执行liogin")
+
                 else: # 不是依赖执行，遍历所有测试场景
-                    pass
+                    self.url = j["url"]
+                    self.method = j["method"]
+                    self.cmd = j["cmd"]
+                    self.expect = j["expect"]
+
+                    del j["url"]
+                    del j["method"]
+                    del j["cmd"]
+                    del j["expect"]
+                    self.parameter = j
+
+                    r = requests.post(self.url, data=self.parameter)
+                    print("zhixing tyikljljk")
+                    print(r.text)
+                    print(r.status_code)
+                    self.exec_queue.remove(i)
+
         '''
         执行接口测试思路：
             判断是否是依赖执行的，如果是只执行第一行的正向测试用例，否则全部执行。
             判断self.exec_queue的个数实现，如果大于1个元素就是依赖执行，否则不是，执行完依赖执行后删除self.exec_queue中已执行的元素
         '''
-
 
     # 读取excl，获得实际结果命令和预期结果
     def get_assert(self, nrow, ncol=0):
@@ -287,5 +314,7 @@ class Base_api():
 
 
 if __name__ == '__main__':
-    run = Base_api('test.xlsx', "Sheet4")
+    run = Base_api('autotest.xlsx', "add_app")
     run.run() # 现在可以获取文档依赖关系。
+
+
