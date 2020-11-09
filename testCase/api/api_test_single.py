@@ -40,12 +40,12 @@ class Api_tese(unittest.TestCase):
 
     # 遍历商机查询接口
     def test_s(self):
-        run = base(self.url, self.data, 'single.xlsx', 8, 9)
+        run = Base_api(self.url, self.data, 'single.xlsx', 8, 9)
         run.run_get()
 
     # 遍历合作成果查询接口
     def test_ss(self):
-        run = base(self.url, self.data, 'single.xlsx', 10, 11)
+        run = Base_api(self.url, self.data, 'single.xlsx', 10, 11)
         run.run_post_json()
 
 
