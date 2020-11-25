@@ -15,7 +15,7 @@ log = log(logname="api", system="interfase")
 class Base_api():
 
     #  初始化方法
-    def __init__(self, filepath, sheet_name):
+    def __init__(self, filepath, sheet_name=None):
         """
         初始化方法
         :param filepath:  存放参数的Excel文件名及后缀
@@ -49,6 +49,7 @@ class Base_api():
         log.debug("打开:{},下的[{}]页".format(self.file, name))
         nor = table.nrows  # 行
         nol = table.ncols  # 列
+        dd = []
         dict = {}
 
         for i in range(1, nor):
@@ -66,7 +67,9 @@ class Base_api():
 
                 dict[title] = value
                 log.debug("获取到的参数名是:%s,参数值是:%s" % (title, value))
-            yield dict
+            dd.append(dict)
+        return dd
+
 
     #  获取接口间的依赖关系
     def _get_exec_queue(self):
@@ -314,7 +317,13 @@ class Base_api():
 
 
 if __name__ == '__main__':
-    run = Base_api('autotest.xlsx', "add_app")
-    run.run() # 现在可以获取文档依赖关系。
+    data = Base_api('test.xlsx')
+    d = data._get_all_data("123")
+    for i in d:
+        print(i)
+
+
+
+
 
 
