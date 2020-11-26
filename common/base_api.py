@@ -1,7 +1,8 @@
 import datetime
 from common.logger import log
-import xlrd, requests, unittest, time, json, pymysql
+import xlrd, requests, unittest, time, json, pymysql, pytest
 from common import path
+from common.util import get_config_info, operation_mysql, operation_oracle
 
 log = log(logname="api", system="interfase")
 
@@ -34,7 +35,6 @@ class Base_api():
         self.method = ""  # 请求方法
 
         self.exec_queue = [self.sheet_name]  # 接口执行队列
-
 
     #  获取sheet页下的所有数据
     def _get_all_data(self, name=None):
@@ -72,13 +72,12 @@ class Base_api():
 
             #参数的值是否为空或null，如果为空就删除该键值对，如果为null就把该键改成 “”，如果读取的值是time就转换成当前时间
             t = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime())
-
             for k in list(data.keys()):
-                # 值为空时删除该键值对，，模拟接口测试中不传改参数
+                # 值为空时删除该键值对，，模拟接口测试中不传该参数
                 if not data[k]:
                     del data[k]
 
-                # 如果值为null时把值改成“”，模拟接口测试中该参数不传值
+                # 如果值为null时把值改成  “”  ，模拟接口测试中该参数不传值
                 elif data[k] == 'null':
                     data[k] = ''
 
@@ -107,8 +106,9 @@ class Base_api():
         """
 根据接口文档信息自动运行对应的请求请求
         """
+        rely = []  # 存放接口的依赖数据
         self._get_exec_queue() # 获取执行队列（接口依赖关系）
-
+        session = ""
         for i in self.exec_queue: # 遍历执行队列
             for j in self._get_all_data(i): # 遍历单个接口所有数据
                 if self.exec_queue[-1] != i: # 依赖执行，只执行第一行
@@ -131,22 +131,45 @@ class Base_api():
                             print(self.exec_queue)
                             print("执行liogin")
 
-                else: # 不是依赖执行，遍历所有测试场景
-                    session =""
-                    if j["USERNAME"] != "":
+                else: # 不是依赖执行，遍历所有测试参数
+                    # 执行sql语句
+                    if j["SQL"] != "":
+                        database = j["SQL"].split("-")
+                        if database[0] == "mysql":
+                            operation_mysql(database[1])
+                        else:
+                            operation_oracle(database[1])
 
-                    self.url = j["URL"]
-                    self.method = j["METHOD"]
+                    # 判断是否需要使用特定的用户登录后操作
+                    if j["USERNAME"] == "":
+                        session = requests.Session()
+                    else:
+                        user = {"username":j["USERNAME"],"password":j["PASSWORD"]}
+                        session = self.add_session(user)
+
+                    # 请求参数
+                    url = j["URL"]
+                    method = j["METHOD"]
                     data = j["data"]
-                    if self.method == "get":
-                        r = requests.get(url=self.url, params=data)
-                        print(r.json())
-                        print(r.status_code)
-                    elif self.method == "post":
-                        r = requests.post(url=self.url,data=data)
-                        print(r.json())
-                        print(r.status_code)
 
+                    # 判断请求的方法
+                    if method == "get":
+                        try:
+                            response = session.get(url=url, params=data)
+                            print(response.json())
+                            response_json = response.json()
+                            assert eval(j["RESULT"]) == j["EXPECT"]
+                        except Exception as e:
+                            raise e
+
+                    elif method == "post":
+                        try:
+                            response = session.post(url=url,data=data)
+                            print(response.json())
+                            response_json = response.json()
+                            assert eval(j["RESULT"]) == j["EXPECT"]
+                        except Exception as e:
+                            raise e
             self.exec_queue.remove(i)
 
         '''
@@ -155,129 +178,20 @@ class Base_api():
             判断self.exec_queue的个数实现，如果大于1个元素就是依赖执行，否则不是，执行完依赖执行后删除self.exec_queue中已执行的元素
         '''
 
-    # 读取excl，获得实际结果命令和预期结果
-    def get_assert(self, nrow, ncol=0):
-        """
-        读取接口的预期结果和获取实际结果的命令
-        :param nrow: 要读取的行数
-        :param ncol: 要读取的列数，默认是0
-        :return: 返回读取的数据
-        """
-        data = xlrd.open_workbook(self.dir_case)
-        table = data.sheet_by_index(self.assert_sheet)
-        log.debug("打开文件:%s的第%s页获取断言信息" % (self.dir_case, self.assert_sheet))
-        value = table.cell_value(nrow, ncol)
-
-        value_type = table.cell(nrow, ncol).ctype
-        if value_type == 2 and value % 1 == 0.0:  # 如果ctype为2且取余于1等于0.0，转换成整型
-            log.debug("获取到的断言类型是小数：%s,已装换成整型" % value)
-            value = int(value)
-            if value == 0.0:
-                value = int(value)
-            log.debug("获取到的断言是0.0，已转换成整型")
-        log.info("断言信息获取成功：%s" % value)
-        return value
-
     # 创建会话对象
-    def add_session(self):
-        log.debug("获取到登录url为：%s" % (self.s_url))
-        log.debug("获取到登录的参数为：%s" % (self.s_data))
-        s = requests.session()
-        log.debug("登录请求成功")
-        response = s.get(url=self.s_url, params=self.s_data)
-        response_json = response.json()
-
-        try:
-            token = response_json['data']['token']
-            self.header['token'] = token
-            log.debug("获取到的token是：%s" % token)
-            log.info("token已添加到heder")
-        except:
-            log.debug("返回值中没有token")
-            pass
-
-        return s
-
-    # 运行get请求
-    def run_get(self):
-        s = self.add_session()
-        for i in Base_api.get_data(self):
-            url = self.get_url()
-            data = Base_api.set_dict(self, i)
-            response = s.get(url, params=data, headers=self.header)
-            result = self.get_assert(self.nrow)  # 实际结果命令
-            expect = self.get_assert(self.nrow, 1)  # 预期结果
-            self.nrow = self.nrow + 1
-            ast = self.nrow - 1  # 现在调用的行数
-            if response.text == expect:  # 判断返回的类型，根据不同的类型做出相应的判断
-                log.debug("返回值类型是text：%s，text断言成功" % response.text)
-            else:
-                response_json = response.json()
-                log.info(result)
-                cmd = eval(result)
-                log.info("断言成功第%s页的%s行" % (self.assert_sheet, ast))
-                self.ast.assertEqual(cmd, expect)
-            log.info("get请求成功")
-
-    # 运行post请求
-    def run_post(self):
-        s = self.add_session()
-        for i in Base_api.get_data(self):
-            url = self.get_url()
-            data = Base_api.set_dict(self, i)  # 调用函数，清除值为空的键值对
-            response = s.post(url, data=data)
-            result = self.get_assert(self.nrow)  # 获取实际结果的命令
-            expect = self.get_assert(self.nrow, 1)  # 预期结果
-            log.info("调用第%s行，命令是：%s，预期结果是：%s" % (self.nrow, result, expect))
-            self.nrow = self.nrow + 1
-            ast = self.nrow - 1
-
-            if response.text == expect:  # 判断返回的类型，根据不同的类型做出相应的判断
-                log.debug("返回值类型是text：%s，text断言成功" % response.text)
-            else:
-                response_json = response.json()
-                cmd = eval(result)
-                log.info("断言成功第%s页的%s行" % (self.assert_sheet, ast))
-                self.ast.assertEqual(cmd, expect)
-            log.info("post请求成功")
-
-    # 运行post请求，参数为json
-    def run_post_json(self):
-        """
-        post请求，请求参数为json，参数以字典的方式存在每行的第一列
-        :return:
-        """
-        self.header['Content-Type'] = "application/json;charset=UTF-8"
-        s = self.add_session()
-        data = xlrd.open_workbook(self.dir_case)
-        table = data.sheets()[self.param]
-        nrows = table.nrows
-        url = self.get_url()
-
-        for i in range(1, nrows):
-            data_list = table.row_values(i)
-            data_str = str(data_list)
-            data_str = data_str.strip("[]")
-            data_str = data_str.strip("'")
-            data_dict = json.loads(data_str)
-
-            response = s.post(url=url, json=data_dict, headers=self.header)
-            result = self.get_assert(self.nrow)  # 获取实际结果的命令
-            expect = self.get_assert(self.nrow, 1)  # 预期结果
-            log.info("调用第%s行，命令是：%s，预期结果是：%s" % (self.nrow, result, expect))
-            self.nrow = self.nrow + 1
-            ast = self.nrow - 1
-            log.info(response.json())
-            log.info(response.text)
-
-            if response.text == expect:  # 判断返回的类型，根据不同的类型做出相应的判断
-                log.debug("返回值类型是text：%s，text断言成功" % response.text)
-            else:
-                response_json = response.json()
-                cmd = eval(result)
-                log.info("断言成功第%s页的%s行" % (self.assert_sheet, ast))
-                self.ast.assertEqual(cmd, expect)
-            log.info("post请求成功")
+    def add_session(self,user):
+        r = requests.Session()
+        response = r.post(url=get_config_info("API-URL",key="login",filename="api_config.ini"), data=user)
+        print(response.json())
+        # try:
+        #     token = response_json['data']['token']
+        #     self.header['token'] = token
+        #     log.debug("获取到的token是：%s" % token)
+        #     log.info("token已添加到heder")
+        # except:
+        #     log.debug("返回值中没有token")
+        #     pass
+        return r
 
     # post请求，上传文件
     def run_post_upload(self, file="file.txt"):

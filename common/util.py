@@ -27,7 +27,7 @@ def get_config_info(section, key=None, filename="config.ini"):
         return config[section][key]
 
 
-def operation_mysql(log, sql, databaseInfo="MySQL"):
+def operation_mysql(sql, databaseInfo="MySQL"):
     """
 操作mysql数据库,如果要操作多个系统的数据库时可以在config下的configInfo配置数据库的相关信息,
     如果sql语句中有引号导致报错可以使用pymysql.escape_string(需要加引号的字符串)
@@ -49,18 +49,19 @@ def operation_mysql(log, sql, databaseInfo="MySQL"):
                              user=user,
                              passwd=pwd,
                              db=database)
-        log.info('数据库已连接')
+        # log.info('数据库已连接')
     except Exception as e:
-        log.error("数据库连接失败-->{}".format(e))
+        pass
+        # log.error("数据库连接失败-->{}".format(e))
     else:
         cursor = db.cursor(pymysql.cursors.DictCursor)  # 获取操作游标
         cursor.execute(sql)  # 执行SQL语句
         results = cursor.fetchall()  # 获取所有记录列表
-        log.info('sql语句执行成功')
+        # log.info('sql语句执行成功')
         return results
 
 
-def operation_oracle(log, sql, databaseInfo="Oracle"):
+def operation_oracle(sql, databaseInfo="Oracle"):
     """
 操作Oracle数据库，如果要操作多个系统的数据库时可以在config下的configInfo配置数据库的相关信息
     :param sql: 要执行的sql语句
@@ -74,9 +75,10 @@ def operation_oracle(log, sql, databaseInfo="Oracle"):
     selector = data["username"] + "/" + data["paswd"] + "@" + data["host"] + "/" + data["databasename"]
     try:
         conn = cx_Oracle.connect(selector)
-        log.info("数据库连接成功")
+        # log.info("数据库连接成功")
     except Exception as e:
-        log.error("数据库连接错误-->{}".format(e))
+        pass
+        # log.error("数据库连接错误-->{}".format(e))
     # 执行sql语句
     cur = conn.cursor()
     cur.execute(sql)
@@ -89,7 +91,7 @@ def operation_oracle(log, sql, databaseInfo="Oracle"):
     conn.commit()
     cur.close()
     conn.close()
-    log.info("操作Oracle数据库成功-->{}".format(sql))
+    # log.info("操作Oracle数据库成功-->{}".format(sql))
 
 
 def multiprocess(func):
