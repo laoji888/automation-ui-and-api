@@ -15,7 +15,7 @@ log = log(logname="api", system="interfase")
 class Base_api():
 
     #  初始化方法
-    def __init__(self, filepath, sheet_name=None):
+    def __init__(self, filepath, sheet_name):
         """
         初始化方法
         :param filepath:  存放参数的Excel文件名及后缀
@@ -26,50 +26,68 @@ class Base_api():
                           'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36',
             'Accept': 'application/json, text/javascript, */*'}
         self.file = path.API_DOCUMENT + '/' + filepath
-        self.sheet_name = sheet_name
         self.data = xlrd.open_workbook(self.file)
         self.nrow = 1
         self.ast = unittest.TestCase()  # 使用unittest框架下的断言
-
-        # 接口地址
+        self.sheet_name = sheet_name
         self.url = ""  # 请求地址
-        self.parameter = {}  # 请求参数
         self.method = ""  # 请求方法
-        self.cmd = ""  # 获取实际结果的命令
-        self.expect = ""  # 预期结果
 
         self.exec_queue = [self.sheet_name]  # 接口执行队列
 
+
     #  获取sheet页下的所有数据
-    def _get_all_data(self, name):
+    def _get_all_data(self, name=None):
         """
         读取Excel里配置好的接口数据
         """
-        table = self.data.sheet_by_name(name)
-        log.debug("打开:{},下的[{}]页".format(self.file, name))
+        sheet_name = ""
+        if name ==None:
+            sheet_name = self.sheet_name
+        else:
+            sheet_name = name
+
+        table = self.data.sheet_by_name(sheet_name)
         nor = table.nrows  # 行
         nol = table.ncols  # 列
-        dd = []
+        data = {}
         dict = {}
-
         for i in range(1, nor):
             for j in range(nol):
                 title = table.cell_value(0, j)
                 value = table.cell_value(i, j)
-
                 value_type = table.cell(i, j).ctype
-                if value_type == 2 and value % 1 == 0.0:  # 如果ctype为2且取余于1等于0.0，转换成整型
+
+                # 如果ctype为2且取余于1等于0.0，转换成整型
+                if value_type == 2 and value % 1 == 0.0:
                     value = int(value)
-                    log.debug("获取到的参数是小数：%s,已转换成整型" % value)
                     if value == 0.0:
                         value = int(value)
-                    log.debug("获取到的参数是：%s，已转换成整型" % value)
 
-                dict[title] = value
-                log.debug("获取到的参数名是:%s,参数值是:%s" % (title, value))
-            dd.append(dict)
-        return dd
+                # 判断是否是参数，如果是参数就放入data内。否则放到dict中
+                if title.isupper():
+                    dict[title] = value
+                else:
+                    data[title] = value
 
+            #参数的值是否为空或null，如果为空就删除该键值对，如果为null就把该键改成 “”，如果读取的值是time就转换成当前时间
+            t = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime())
+
+            for k in list(data.keys()):
+                # 值为空时删除该键值对，，模拟接口测试中不传改参数
+                if not data[k]:
+                    del data[k]
+
+                # 如果值为null时把值改成“”，模拟接口测试中该参数不传值
+                elif data[k] == 'null':
+                    data[k] = ''
+
+                # 如果值中是time就转换成当前时间
+                elif data[k] == 'time':
+                    data[k] = t
+
+            dict["data"] = data
+            yield dict
 
     #  获取接口间的依赖关系
     def _get_exec_queue(self):
@@ -78,8 +96,8 @@ class Base_api():
         """
         for i in self.exec_queue:
             for j in self._get_all_data(i):
-                if j["rely"] != "":
-                    self.exec_queue.append(j["rely"])
+                if j["RELY_API"] != "":
+                    self.exec_queue.append(j["RELY_API"])
                 else:
                     self.exec_queue.reverse()
                     break
@@ -114,22 +132,22 @@ class Base_api():
                             print("执行liogin")
 
                 else: # 不是依赖执行，遍历所有测试场景
-                    self.url = j["url"]
-                    self.method = j["method"]
-                    self.cmd = j["cmd"]
-                    self.expect = j["expect"]
+                    session =""
+                    if j["USERNAME"] != "":
 
-                    del j["url"]
-                    del j["method"]
-                    del j["cmd"]
-                    del j["expect"]
-                    self.parameter = j
+                    self.url = j["URL"]
+                    self.method = j["METHOD"]
+                    data = j["data"]
+                    if self.method == "get":
+                        r = requests.get(url=self.url, params=data)
+                        print(r.json())
+                        print(r.status_code)
+                    elif self.method == "post":
+                        r = requests.post(url=self.url,data=data)
+                        print(r.json())
+                        print(r.status_code)
 
-                    r = requests.post(self.url, data=self.parameter)
-                    print("zhixing tyikljljk")
-                    print(r.text)
-                    print(r.status_code)
-                    self.exec_queue.remove(i)
+            self.exec_queue.remove(i)
 
         '''
         执行接口测试思路：
@@ -159,32 +177,6 @@ class Base_api():
             log.debug("获取到的断言是0.0，已转换成整型")
         log.info("断言信息获取成功：%s" % value)
         return value
-
-    # 遍历字典的值是否为空或null，如果为空就删除该键值对，如果为null就把该键改成 “”。如果不传参数Excel为空即可，如果想参数值为空就写null。
-    def set_dict(self, data):
-        """
-        遍历字典的值是否为空或null，如果为空就删除该键值对，如果为null就把该键改成 “”，空值不等于null,如果读取的值是time就转换成当前时间
-        :param data: 要遍历的字典
-        :return: 返回删除空值的键值对后的字典
-        """
-
-        t = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime())
-        xx = data
-        for k in list(data.keys()):
-            if not data[k]:
-                log.debug("获取到的键：%s 的值为空，删除该键值对" % data[k])
-                del data[k]
-
-            elif data[k] == 'null':
-                data[k] = ''
-                log.debug("获取到的键：%s 的值为 null，把该键的值设置为空" % data[k])
-
-            elif data[k] == 'time':
-                data[k] = t
-                log.debug("获取到的键：%s 的值为 time，把该键的值设置为当前时间" % data[k])
-        log.info("参数格式化成功")
-
-        return xx
 
     # 创建会话对象
     def add_session(self):
@@ -317,10 +309,11 @@ class Base_api():
 
 
 if __name__ == '__main__':
-    data = Base_api('test.xlsx')
-    d = data._get_all_data("123")
-    for i in d:
-        print(i)
+    data = Base_api('autotest-api.xlsx',"login")
+    data.run()
+
+
+
 
 
 
