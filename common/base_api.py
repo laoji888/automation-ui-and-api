@@ -1,6 +1,6 @@
 import datetime
 from common.logger import log
-import xlrd, requests, unittest, time, json, pymysql, pytest
+import xlrd, requests, unittest, time, json
 from common import path
 from common.util import get_config_info, operation_mysql, operation_oracle
 
@@ -35,6 +35,7 @@ class Base_api():
         self.method = ""  # 请求方法
 
         self.exec_queue = [self.sheet_name]  # 接口执行队列
+        self.rely_data = {}
 
     #  获取sheet页下的所有数据
     def _get_all_data(self, name=None):
@@ -42,7 +43,7 @@ class Base_api():
         读取Excel里配置好的接口数据
         """
         sheet_name = ""
-        if name ==None:
+        if name == None:
             sheet_name = self.sheet_name
         else:
             sheet_name = name
@@ -56,13 +57,16 @@ class Base_api():
             for j in range(nol):
                 title = table.cell_value(0, j)
                 value = table.cell_value(i, j)
-                value_type = table.cell(i, j).ctype
+                value_type = table.cell(i, j).ctype  # ctype : 0 空,1 字符串, 2 数字, 3 date, 4 布尔, 5 错误
 
-                # 如果ctype为2且取余于1等于0.0，转换成整型
+                # 如果ctype为2，转换成整型
                 if value_type == 2 and value % 1 == 0.0:
                     value = int(value)
                     if value == 0.0:
                         value = int(value)
+                # 如果ctype为3，格式化日期
+                elif value_type == 3:
+                    value = xlrd.xldate_as_datetime(table.cell(i, j).value, 0).strftime("%Y/%m/%d")
 
                 # 判断是否是参数，如果是参数就放入data内。否则放到dict中
                 if title.isupper():
@@ -70,7 +74,7 @@ class Base_api():
                 else:
                     data[title] = value
 
-            #参数的值是否为空或null，如果为空就删除该键值对，如果为null就把该键改成 “”，如果读取的值是time就转换成当前时间
+            # 参数的值是否为空或null，如果为空就删除该键值对，如果为null就把该键改成 “”，如果读取的值是time就转换成当前时间
             t = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime())
             for k in list(data.keys()):
                 # 值为空时删除该键值对，，模拟接口测试中不传该参数
@@ -95,8 +99,14 @@ class Base_api():
         """
         for i in self.exec_queue:
             for j in self._get_all_data(i):
+
+                # 如果 "RELY_API" 不为空将依赖的接口加入到执行队列
                 if j["RELY_API"] != "":
                     self.exec_queue.append(j["RELY_API"])
+
+                    # 判断是否需要依赖接口的返回数据，如果需要将依赖的数据添加到
+                    if j["RELY_VALUE"] != "":
+                        self.rely_data[i] = j["RELY_VALUE"]
                 else:
                     self.exec_queue.reverse()
                     break
@@ -106,35 +116,72 @@ class Base_api():
         """
 根据接口文档信息自动运行对应的请求请求
         """
+        url = ""
+        method = ""
         rely = []  # 存放接口的依赖数据
-        self._get_exec_queue() # 获取执行队列（接口依赖关系）
+        self._get_exec_queue()  # 获取执行队列（接口依赖关系）
         session = ""
-        for i in self.exec_queue: # 遍历执行队列
-            for j in self._get_all_data(i): # 遍历单个接口所有数据
-                if self.exec_queue[-1] != i: # 依赖执行，只执行第一行
-                    if j["url"] != "": # 判断是不是第一行
-                        self.url = j["url"]
-                        self.method = j["method"]
-                        self.cmd = j["cmd"]
-                        self.expect = j["expect"]
+        for i in self.exec_queue:  # 遍历执行队列
+            for j in self._get_all_data(i):  # 遍历单个接口所有数据
+                # 请求地址和请求方法在单个用例内数据持久化
+                if j["URL"] == "":
+                    pass
+                else:
+                    url = j["URL"]
+                    method = j["METHOD"]
 
-                        del j["url"]
-                        del j["method"]
-                        del j["cmd"]
-                        del j["expect"]
-                        del j["rely"]
-                        self.parameter = j
-                        if self.method == "post": # 判断请求的方法
-                            r = requests.post(self.url, data=self.parameter)
-                            print(r.text)
-                            print(r.status_code)
-                            print(self.exec_queue)
-                            print("执行liogin")
+                if self.exec_queue[-1] != i:  # 依赖执行，只执行正向的测试数据
+                    '''
+                    解决依赖思路：比如A 依赖 B
+                        RELY_API： 依赖的接口
+                        RELY_VALUE： 依赖接口的返回数据，内含获取数据的条件，如：response_json["data"]-account=laoji-userId
+                        
+                        运行B时 如果RELY_VALUE不为空，就将RELY_VALUE的值存到字典中。执行B时获取想要的执行结果在放到x字典中。
+                        运行A时 
+                        
+                        
+                    '''
+                    if j["TYPE"] == "":  # 判断是否是正向测试用例
+                        pass
+                    else:
+                        # 执行sql语句
+                        if j["SQL"] != "":
+                            database = j["SQL"].split("-")
+                            if database[0] == "mysql":
+                                operation_mysql(database[1])
+                            else:
+                                operation_oracle(database[1])
 
-                else: # 不是依赖执行，遍历所有测试参数
-                    # 执行sql语句
-                    if j["SQL"] != "":
-                        database = j["SQL"].split("-")
+                        # 判断是否需要使用特定的用户登录后操作
+                        if j["USERNAME"] == "":
+                            session = requests.Session()
+                        else:
+                            user = {"username": j["USERNAME"], "password": j["PASSWORD"]}
+                            session = self.add_session(user)
+
+                            # 判断请求的方法
+                            if method == "get":
+                                try:
+                                    response = session.get(url=url, params=j["data"])
+                                    print(response.json())
+                                    response_json = response.json()
+                                    assert eval(j["RESULT"]) == j["EXPECT"]
+                                except Exception as e:
+                                    raise e
+
+                            elif method == "post":
+                                try:
+                                    response = session.post(url=url, data=j["data"])
+                                    print(response.json())
+                                    response_json = response.json()
+                                    assert eval(j["RESULT"]) == j["EXPECT"]
+                                except Exception as e:
+                                    raise e
+
+                else:  # 不是依赖执行，遍历所有测试参数
+                    # 初始化环境sql语句
+                    if j["INITIALIZE"] != "":
+                        database = j["INITIALIZE"].split("-")
                         if database[0] == "mysql":
                             operation_mysql(database[1])
                         else:
@@ -144,7 +191,7 @@ class Base_api():
                     if j["USERNAME"] == "":
                         session = requests.Session()
                     else:
-                        user = {"username":j["USERNAME"],"password":j["PASSWORD"]}
+                        user = {"username": j["USERNAME"], "password": j["PASSWORD"]}
                         session = self.add_session(user)
 
                     # 请求参数
@@ -155,7 +202,7 @@ class Base_api():
                     # 判断请求的方法
                     if method == "get":
                         try:
-                            response = session.get(url=url, params=data)
+                            response = session.get(url=url, params=j["data"])
                             print(response.json())
                             response_json = response.json()
                             assert eval(j["RESULT"]) == j["EXPECT"]
@@ -164,13 +211,15 @@ class Base_api():
 
                     elif method == "post":
                         try:
-                            response = session.post(url=url,data=data)
+                            response = session.post(url=url, data=j["data"],headers=self.header)
                             print(response.json())
                             response_json = response.json()
                             assert eval(j["RESULT"]) == j["EXPECT"]
+                            print("---------------------------------------------------")
                         except Exception as e:
                             raise e
-            self.exec_queue.remove(i)
+            self.exec_queue.remove(i)  # 删除执行队列中完成的依赖接口
+        self.exec_queue.clear()  # 清空执行队列
 
         '''
         执行接口测试思路：
@@ -179,9 +228,9 @@ class Base_api():
         '''
 
     # 创建会话对象
-    def add_session(self,user):
+    def add_session(self, user):
         r = requests.Session()
-        response = r.post(url=get_config_info("API-URL",key="login",filename="api_config.ini"), data=user)
+        response = r.post(url=get_config_info("API-URL", key="login", filename="api_config.ini"), data=user)
         print(response.json())
         # try:
         #     token = response_json['data']['token']
@@ -223,14 +272,7 @@ class Base_api():
 
 
 if __name__ == '__main__':
-    data = Base_api('autotest-api.xlsx',"login")
-    data.run()
-
-
-
-
-
-
-
-
-
+    data = Base_api('autotest-api.xlsx', "add_app")
+    # data.run()
+    for i in data._get_all_data("del_user"):
+        print(i)

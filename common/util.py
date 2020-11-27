@@ -51,12 +51,13 @@ def operation_mysql(sql, databaseInfo="MySQL"):
                              db=database)
         # log.info('数据库已连接')
     except Exception as e:
-        pass
+        raise e
         # log.error("数据库连接失败-->{}".format(e))
     else:
         cursor = db.cursor(pymysql.cursors.DictCursor)  # 获取操作游标
         cursor.execute(sql)  # 执行SQL语句
         results = cursor.fetchall()  # 获取所有记录列表
+        db.commit()
         # log.info('sql语句执行成功')
         return results
 
@@ -103,6 +104,10 @@ def multiprocess(func):
             p = multiprocessing.Process(target=func, args=(v,))
             p.start()
     return wrapper
+
+if __name__ == '__main__':
+    r = operation_mysql('DELETE FROM sys_user WHERE account="laoji"')
+    print(r)
 
 
 
