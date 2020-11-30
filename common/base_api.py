@@ -120,22 +120,22 @@ class Base_api():
         method = ""
         rely = {}  # 存放接口的依赖数据
         self._get_exec_queue()  # 获取执行队列（接口依赖关系）
-        print("执行队列是： ", self.exec_queue)
-        print(self.rely_data)
+        print("当前的接口执行队列是： {}".format(self.exec_queue))
+        print("当前的接口依赖数据是： {}".format(self.rely_data))
         session = ""
         response_json = ""
+
         for i in self.exec_queue:  # 遍历执行队列
             for j in self._get_all_data(i):  # 遍历单个接口所有数据
                 # 请求地址和请求方法在单个用例内数据持久化
-                if j["URL"] == "":
-                    pass
-                else:
+                if j["URL"] != "":
                     url = j["URL"]
                     method = j["METHOD"]
 
-                if self.exec_queue[-1] != i:  # 如果是依赖执行，只执行正向的测试数据
+                # 如果是依赖执行，只执行正向的测试数据
+                if self.exec_queue[-1] != i:
                     if j["TYPE"] != "":  # 判断是否是正向测试用例
-                        print("当前运行的接口时{}".format(i))
+                        print("当前运行的依赖接口是{}".format(i))
                         if j["INITIALIZE"] != "": # 执行环境初始化
                             database = j["INITIALIZE"].split("-")
                             if database[0] == "mysql":
@@ -150,13 +150,12 @@ class Base_api():
                             user = {"username": j["USERNAME"], "password": j["PASSWORD"]}
                             session = self.add_session(user)
 
-
                         # 判断请求的方法
                         if method == "get":
                             try:
                                 response = session.get(url=url, params=j["data"])
                                 print(response.json())
-                                print("==================================================>>")
+                                print("\n")
                                 response_json = response.json()
                                 assert eval(j["RESULT"]) == j["EXPECT"]
                             except Exception as e:
@@ -166,7 +165,7 @@ class Base_api():
                             try:
                                 response = session.post(url=url, data=j["data"])
                                 print(response.json())
-                                print("==================================================>>")
+                                print("\n")
                                 response_json = response.json()
                                 assert eval(j["RESULT"]) == j["EXPECT"]
                             except Exception as e:
@@ -176,7 +175,6 @@ class Base_api():
                         for key in self.rely_data.keys():
                             if key == i:
                                 get_result_str = self.rely_data[i].split("-") # 获取返回数据的表达式
-                                print(get_result_str)
                                 if get_result_str[1].__contains__("="):
                                     where = get_result_str[1].split("=")
                                     # 获取结果的条件
@@ -188,13 +186,6 @@ class Base_api():
                                         for i in eval(get_result_str[0]):
                                             if i[key] == value:
                                                 rely[get_result_str[2]] = i[get_result_str[2]]
-                                                """
-                                                给返回的结果添加标识。用于识别是哪个接口的依赖
-                                                """
-                        print(rely)
-
-
-
 
                     if j["RESTORE"] != "":  # 执行完测试用例后的环境还原
                         database = j["RESTORE"].split("-")
@@ -224,23 +215,17 @@ class Base_api():
                         url = j["URL"]
                         method = j["METHOD"]
 
-
-
-
                     for key in j["data"].keys():
                         for i in rely:
                             if key == i:
                                 j["data"][key] = rely[i]
 
-                    print("---------------->>>>>", j["data"])
-
                     # 判断请求的方法
                     if method == "get":
                         try:
                             response = session.get(url=url, params=j["data"])
-                            print(j["data"])
                             print(response.json())
-                            print("---------------------------------------------------")
+                            print("\n")
                             response_json = response.json()
                             assert eval(j["RESULT"]) == j["EXPECT"]
                         except Exception as e:
@@ -252,7 +237,7 @@ class Base_api():
                             print(response.json())
                             response_json = response.json()
                             assert eval(j["RESULT"]) == j["EXPECT"]
-                            print("---------------------------------------------------")
+                            print("\n")
                         except Exception as e:
                             raise e
 
