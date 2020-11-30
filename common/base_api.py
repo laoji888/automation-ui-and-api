@@ -150,6 +150,7 @@ class Base_api():
                             user = {"username": j["USERNAME"], "password": j["PASSWORD"]}
                             session = self.add_session(user)
 
+
                         # 判断请求的方法
                         if method == "get":
                             try:
@@ -219,14 +220,27 @@ class Base_api():
                         session = self.add_session(user)
 
                     # 请求参数
-                    url = j["URL"]
-                    method = j["METHOD"]
+                    if j["URL"] != "":
+                        url = j["URL"]
+                        method = j["METHOD"]
+
+
+
+
+                    for key in j["data"].keys():
+                        for i in rely:
+                            if key == i:
+                                j["data"][key] = rely[i]
+
+                    print("---------------->>>>>", j["data"])
 
                     # 判断请求的方法
                     if method == "get":
                         try:
                             response = session.get(url=url, params=j["data"])
+                            print(j["data"])
                             print(response.json())
+                            print("---------------------------------------------------")
                             response_json = response.json()
                             assert eval(j["RESULT"]) == j["EXPECT"]
                         except Exception as e:
