@@ -71,13 +71,14 @@ def operation_oracle(sql, databaseInfo="Oracle"):
     使用方法：在场景中直接调用此方法，传入相应的参数即可
     """
 
-    conn = " "
+    conn = ""
     data = get_config_info(databaseInfo)
     selector = data["username"] + "/" + data["paswd"] + "@" + data["host"] + "/" + data["databasename"]
     try:
         conn = cx_Oracle.connect(selector)
         # log.info("数据库连接成功")
     except Exception as e:
+        print(e)
         pass
         # log.error("数据库连接错误-->{}".format(e))
     # 执行sql语句

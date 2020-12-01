@@ -28,7 +28,7 @@ ELEMENT_DIR = os.path.join(BASE_DIR,"pageElement").replace('\\','/')
 # 元素目录
 PATH_DIR = os.path.join(BASE_DIR,"common","/path.py").replace('\\','/')
 # 文件上传目录
-UPLOAD_DIR = "/app/newland/usmb/uploadfile/"
+UPLOAD_DIR = os.path.join(BASE_DIR,"uploads").replace('\\','/')
 # html测试报告路径
 HTML_REPORT_DIR = os.path.join(BASE_DIR,"html_report/").replace('\\','/')
 # api接口文档路径

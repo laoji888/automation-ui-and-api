@@ -29,13 +29,11 @@ class Base_api():
         self.file = path.API_DOCUMENT + '/' + filepath
         self.data = xlrd.open_workbook(self.file)
         self.nrow = 1
-        self.ast = unittest.TestCase()  # 使用unittest框架下的断言
         self.sheet_name = sheet_name
-        self.url = ""  # 请求地址
-        self.method = ""  # 请求方法
 
         self.exec_queue = [self.sheet_name]  # 接口执行队列
-        self.rely_data = {}
+        self.rely_data = {} # 获取接口返回数据的表达式
+        self.rely = {}  # 存放接口的依赖数据
 
     #  获取sheet页下的所有数据
     def _get_all_data(self, name=None):
@@ -118,7 +116,6 @@ class Base_api():
         """
         url = ""
         method = ""
-        rely = {}  # 存放接口的依赖数据
         self._get_exec_queue()  # 获取执行队列（接口依赖关系）
         print("当前的接口执行队列是： {}".format(self.exec_queue))
         print("当前的接口依赖数据是： {}".format(self.rely_data))
@@ -127,35 +124,44 @@ class Base_api():
 
         for i in self.exec_queue:  # 遍历执行队列
             for j in self._get_all_data(i):  # 遍历单个接口所有数据
+
+                # 初始化环境sql语句
+                if j["INITIALIZE"] != "":
+                    database = j["INITIALIZE"].split("-")
+                    if database[0] == "mysql":
+                        operation_mysql(database[1])
+                    else:
+                        operation_oracle(database[1])
+
                 # 请求地址和请求方法在单个用例内数据持久化
                 if j["URL"] != "":
                     url = j["URL"]
                     method = j["METHOD"]
 
+                # 判断是否需要使用特定的用户登录后操作
+                if j["USERNAME"] == "":
+                    session = requests.Session()
+                else:
+                    user = {"username": j["USERNAME"], "password": j["PASSWORD"]}
+                    session = self.add_session(user)
+
+                # 替换依赖接口返回的数据
+                for before in j["data"].keys():
+                    for existing in self.rely.keys():
+                        if existing == before:
+                            j["data"][before] = self.rely[existing]
+
                 # 如果是依赖执行，只执行正向的测试数据
                 if self.exec_queue[-1] != i:
                     if j["TYPE"] != "":  # 判断是否是正向测试用例
                         print("当前运行的依赖接口是{}".format(i))
-                        if j["INITIALIZE"] != "": # 执行环境初始化
-                            database = j["INITIALIZE"].split("-")
-                            if database[0] == "mysql":
-                                operation_mysql(database[1])
-                            else:
-                                operation_oracle(database[1])
-
-                        # 判断是否需要使用特定的用户登录后操作
-                        if j["USERNAME"] == "":
-                            session = requests.Session()
-                        else:
-                            user = {"username": j["USERNAME"], "password": j["PASSWORD"]}
-                            session = self.add_session(user)
 
                         # 判断请求的方法
                         if method == "get":
                             try:
                                 response = session.get(url=url, params=j["data"])
                                 print(response.json())
-                                print("\n")
+                                
                                 response_json = response.json()
                                 assert eval(j["RESULT"]) == j["EXPECT"]
                             except Exception as e:
@@ -165,67 +171,42 @@ class Base_api():
                             try:
                                 response = session.post(url=url, data=j["data"])
                                 print(response.json())
-                                print("\n")
+                                
                                 response_json = response.json()
                                 assert eval(j["RESULT"]) == j["EXPECT"]
                             except Exception as e:
                                 raise e
 
-                        # 判断是否需要依赖接口的返回数据
+                        # 判断是否需要接口的返回数据
                         for key in self.rely_data.keys():
                             if key == i:
                                 get_result_str = self.rely_data[i].split("-") # 获取返回数据的表达式
-                                if get_result_str[1].__contains__("="):
-                                    where = get_result_str[1].split("=")
+                                if len(get_result_str) > 2: # 大于2时证明获取数据需要条件
+                                    where = get_result_str[2].split("=")
                                     # 获取结果的条件
                                     key = where[0]
                                     value = where[1]
 
                                     # 判断获取数据的元素是否是列表或者字典
                                     if type(eval(get_result_str[0])) == list:
-                                        for i in eval(get_result_str[0]):
-                                            if i[key] == value:
-                                                rely[get_result_str[2]] = i[get_result_str[2]]
+                                        for v in eval(get_result_str[0]):
+                                            if v[key] == value:
+                                                self.rely[get_result_str[1]] = v[get_result_str[1]]
 
-                    if j["RESTORE"] != "":  # 执行完测试用例后的环境还原
-                        database = j["RESTORE"].split("-")
-                        if database[0] == "mysql":
-                            operation_mysql(database[1])
-                        else:
-                            operation_oracle(database[1])
+                                else: # 没有符合条件的接口，未验证
+                                    self.rely[get_result_str[1]] = eval(get_result_str[0])[get_result_str[1]]
+
+
 
                 else:  # 不是依赖执行，遍历所有测试参数
-                    # 初始化环境sql语句
-                    if j["INITIALIZE"] != "":
-                        database = j["INITIALIZE"].split("-")
-                        if database[0] == "mysql":
-                            operation_mysql(database[1])
-                        else:
-                            operation_oracle(database[1])
-
-                    # 判断是否需要使用特定的用户登录后操作
-                    if j["USERNAME"] == "":
-                        session = requests.Session()
-                    else:
-                        user = {"username": j["USERNAME"], "password": j["PASSWORD"]}
-                        session = self.add_session(user)
-
-                    # 请求参数
-                    if j["URL"] != "":
-                        url = j["URL"]
-                        method = j["METHOD"]
-
-                    for key in j["data"].keys():
-                        for i in rely:
-                            if key == i:
-                                j["data"][key] = rely[i]
+                    print("当前运行的接口是：{}".format(i))
 
                     # 判断请求的方法
                     if method == "get":
                         try:
                             response = session.get(url=url, params=j["data"])
                             print(response.json())
-                            print("\n")
+                            
                             response_json = response.json()
                             assert eval(j["RESULT"]) == j["EXPECT"]
                         except Exception as e:
@@ -237,16 +218,34 @@ class Base_api():
                             print(response.json())
                             response_json = response.json()
                             assert eval(j["RESULT"]) == j["EXPECT"]
-                            print("\n")
+                            
                         except Exception as e:
                             raise e
 
-                    if j["RESTORE"] != "": # 执行完测试用例后的环境还原
-                        database = j["RESTORE"].split("-")
+                # 数据库断言
+                if j["DATABASE_ASSERT"] != "":
+                    result = ""
+                    try:
+                        database = j["DATABASE_ASSERT"].split("-")
                         if database[0] == "mysql":
-                            operation_mysql(database[1])
+                            result = operation_mysql(database[1])
                         else:
-                            operation_oracle(database[1])
+                            result =operation_oracle(database[1])
+                        print(result)
+                        for l in result:
+                            for ii in l.keys():
+                                assert l[ii] == database[2]
+                    except Exception as e:
+                        raise e
+
+                # 执行完测试用例后的环境还原
+                if j["RESTORE"] != "":
+                    database = j["RESTORE"].split("-")
+                    if database[0] == "mysql":
+                        operation_mysql(database[1])
+                    else:
+                        operation_oracle(database[1])
+
         self.exec_queue.clear()  # 清空执行队列
 
     # 创建会话对象
@@ -294,6 +293,8 @@ class Base_api():
 
 if __name__ == '__main__':
     data = Base_api('autotest-api.xlsx', "del_user")
+    # data = Base_api('autotest-api.xlsx', "login")
     data.run()
+
     # for i in data._get_all_data("del_user"):
     #     print(i)

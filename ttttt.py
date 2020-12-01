@@ -1,5 +1,5 @@
 
-a = "254313"
-print(a.__contains__(""))
-print("\n")
-print(a.__contains__(""))
+a = {}
+
+for i in a.keys():
+    print(a[i])
