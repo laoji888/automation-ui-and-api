@@ -1,4 +1,4 @@
-import requests
+import requests,json
 
 # r = requests.Session()
 # filePate = "C:\\Users\\jiyanan\\Desktop\\appium-hub-start.bat"
@@ -14,4 +14,5 @@ import requests
 data = '{"pageNum":1,"pageSize":10,"totalRecord":51,"testSystemName":"测试报告用","testSystemIp":""}'
 print(type(data))
 print(type(eval(data)))
+print(type(json.loads(data)))
 
