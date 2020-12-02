@@ -120,10 +120,17 @@ class Base_api():
         print("当前的接口执行队列是： {}".format(self.exec_queue))
         print("当前的接口依赖数据是： {}".format(self.rely_data))
         session = ""
+        response = ""
         response_json = ""
 
         for i in self.exec_queue:  # 遍历执行队列
             for j in self._get_all_data(i):  # 遍历单个接口所有数据
+                data = ""
+                # 判断传递的参数是否是json
+                if "json" in j["data"]:
+                    data = eval(j["data"]["json"])
+                else:
+                    data = j["data"]
 
                 # 初始化环境sql语句
                 if j["INITIALIZE"] != "":
@@ -139,11 +146,11 @@ class Base_api():
                     method = j["METHOD"]
 
                 # 判断是否需要使用特定的用户登录后操作
-                if j["USERNAME"] == "":
+                if j["RELY_USER"] == "":
                     session = requests.Session()
                 else:
-                    user = {"username": j["USERNAME"], "password": j["PASSWORD"]}
-                    session = self.add_session(user)
+                    userInfo = j["RELY_USER"].split("-")
+                    session = self.add_session(userInfo)
 
                 # 替换依赖接口返回的数据
                 for before in j["data"].keys():
@@ -159,7 +166,7 @@ class Base_api():
                         # 判断请求的方法
                         if method == "get":
                             try:
-                                response = session.get(url=url, params=j["data"])
+                                response = session.get(url=url, params=data)
                                 print(response.json())
                                 
                                 response_json = response.json()
@@ -169,7 +176,7 @@ class Base_api():
 
                         elif method == "post":
                             try:
-                                response = session.post(url=url, data=j["data"])
+                                response = session.post(url=url, data=data)
                                 print(response.json())
                                 
                                 response_json = response.json()
@@ -200,27 +207,41 @@ class Base_api():
 
                 else:  # 不是依赖执行，遍历所有测试参数
                     print("当前运行的接口是：{}".format(i))
+                    if "json" in j["data"]:
+                        print(data)
+                        response = session.post(url=url, json=data)
+                        response_json = response.json()
+                        print(response_json)
+                        assert eval(j["RESULT"]) == j["EXPECT"]
 
-                    # 判断请求的方法
-                    if method == "get":
-                        try:
-                            response = session.get(url=url, params=j["data"])
-                            print(response.json())
-                            
-                            response_json = response.json()
-                            assert eval(j["RESULT"]) == j["EXPECT"]
-                        except Exception as e:
-                            raise e
+                    else:
+                        # 判断请求的方法
+                        if method == "get":
+                            try:
+                                response = session.get(url=url, params=data)
+                                print(response.json())
 
-                    elif method == "post":
-                        try:
-                            response = session.post(url=url, data=j["data"],headers=self.header)
-                            print(response.json())
-                            response_json = response.json()
-                            assert eval(j["RESULT"]) == j["EXPECT"]
-                            
-                        except Exception as e:
-                            raise e
+                                response_json = response.json()
+                                assert eval(j["RESULT"]) == j["EXPECT"]
+                            except Exception as e:
+                                raise e
+
+                        elif method == "post":
+                            try:
+                                if j["FILE"] != "":
+                                    upload_info = j["FILE"].split("-")
+                                    filePate = path.UPLOAD_DIR + "/" + upload_info[1]
+                                    file = {upload_info[0]: open(filePate, 'rb')}
+                                    response = session.post(url=url, data=data, headers=self.header, files=file)
+                                else:
+                                    response = session.post(url=url, data=data,headers=self.header)
+
+                                print(response.json())
+                                response_json = response.json()
+                                assert eval(j["RESULT"]) == j["EXPECT"]
+
+                            except Exception as e:
+                                raise e
 
                 # 数据库断言
                 if j["DATABASE_ASSERT"] != "":
@@ -249,52 +270,26 @@ class Base_api():
         self.exec_queue.clear()  # 清空执行队列
 
     # 创建会话对象
-    def add_session(self, user):
-        r = requests.Session()
-        response = r.post(url=get_config_info("API-URL", key="login", filename="api_config.ini"), data=user)
-        # try:
-        #     token = response_json['data']['token']
-        #     self.header['token'] = token
-        #     log.debug("获取到的token是：%s" % token)
-        #     log.info("token已添加到heder")
-        # except:
-        #     log.debug("返回值中没有token")
-        #     pass
+    def add_session(self,userInfo):
+        userNameKey = userInfo[0].split("=")[0]
+        userNameValue = userInfo[0].split("=")[1]
+
+        pwdKey = userInfo[1].split("=")[0]
+        pwdValue = userInfo[1].split("=")[1]
+        r = ""
+
+        for i in self._get_all_data("login"):
+            if i["TYPE"] != "":
+                i["data"][userNameKey] = userNameValue
+                i["data"][pwdKey] = pwdValue
+                r = requests.Session()
+                response = r.post(url=i["URL"], data=i["data"])
         return r
 
-    # post请求，上传文件
-    def run_post_upload(self, file="file.txt"):
-        """
-        上传文件
-        :param file: 上传的文件名
-        """
-        s = self.add_session()
-        for i in Base_api.get_data(self):
-            url = self.get_url()
-            data = Base_api.set_dict(self, i)  # 调用函数，清除值为空的键值对
-            filePate = path.BASE_DIR + "/" + file
-            file = {'file': open(filePate, 'rb')}
-            response = s.post(url=url, data=data, files=file)
-            result = self.get_assert(self.nrow)  # 获取实际结果的命令
-            expect = self.get_assert(self.nrow, 1)  # 预期结果
-            log.info("调用第%s行，命令是：%s，预期结果是：%s" % (self.nrow, result, expect))
-            self.nrow = self.nrow + 1
-            ast = self.nrow - 1
-
-            if response.text == expect:  # 判断返回的类型，根据不同的类型做出相应的判断
-                log.debug("返回值类型是text：%s，text断言成功" % response.text)
-            else:
-                response_json = response.json()
-                cmd = eval(result)
-                log.info("断言成功第%s页的%s行" % (self.assert_sheet + 1, ast))
-                self.ast.assertEqual(cmd, expect)
-            log.info("post请求成功")
-
-
 if __name__ == '__main__':
-    data = Base_api('autotest-api.xlsx', "del_user")
-    # data = Base_api('autotest-api.xlsx', "login")
+    # data = Base_api('guns.xlsx', "del_user")
+    # data = Base_api('ui-autotest.xlsx', "login")
+    # data = Base_api('performance-autotest.xlsx', "login")
+    data = Base_api('performance-autotest.xlsx', "search-system")
     data.run()
-
-    # for i in data._get_all_data("del_user"):
-    #     print(i)
+    # data.add_session(aa)

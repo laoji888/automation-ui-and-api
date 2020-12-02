@@ -18,10 +18,9 @@ API：
             RELY_VALUE：当前接口所依赖的接口返回的数据获取方式。例如response_json["data"]-userId-account=laoji，以-分割。
             第一个元素是获取结果的语句，第二个元素是要获取的key，第三个元素是获取结果的条件（接口返回多条数据时大多使用列表的形式，
             此时需要遍历列表的数据，该条件是定位某一条数据的条件
-            USERNAME：执行本接口需要的用户名
-            PASSWORD：执行本接口需要的密码
+            RELY_USER: 本接口依赖的用户，例如：username=admin-password=111111。username和password是登录接口的参数名。
             TYPE：测试用例的类型，forward为正向测试用例，接口作为依赖执行时只执行正向的测试用例，反向测试用例为空即可
-            FILE：要上传的文件名加后缀，后台代码会自动拼接路径
+            FILE：参数中的参数名 + 要上传的文件名加后缀，用“-”分割。后台代码会自动拼接路径，例如：uploadFile-file.txt
             INITIALIZE：环境初始化sql语句，mysql-DELETE FROM sys_user WHERE account="laoji"，“-”以前的字符串用于区分数据库。
             RESTORE：环境还原要执行的sql语句
             
