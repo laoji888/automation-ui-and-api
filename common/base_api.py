@@ -188,7 +188,6 @@ class Base_api():
             elif assert_data[1] == "!=":
                 assert eval(assert_data[0]) != expect
             log.info("检查点校验成功")
-            log.info("\n")
         except Exception as e:
             log.error("检查点检验失败！预期结果是：{}，实际结果是：{}".format(self.assert_data,
                                                          assert_data[0] + " " + assert_data[1] + " " +  eval(assert_data[0])))
@@ -283,10 +282,7 @@ class Base_api():
                                 else:  # 没有符合条件的接口，未验证
                                     self.rely[get_result_str[1]] = eval(get_result_str[0])[get_result_str[1]]
 
-
-
                 else:  # 不是依赖执行，遍历所有测试参数
-                    print("当前运行的接口是：{}".format(i))
                     if self.method == "post":
                         self.response_json = self.post()
 
@@ -296,7 +292,6 @@ class Base_api():
                         self.response_json = self.get()
 
                         self.verify()
-
 
                 # 数据库断言
                 if j["DATABASE_ASSERT"] != "":
@@ -328,6 +323,7 @@ class Base_api():
             log.info("当前接口返回数据是：{}".format(self.response_json))
 
         self.exec_queue.clear()  # 清空执行队列
+        log.info("\n")
 
     # 创建会话对象
     def add_session(self, userInfo):
