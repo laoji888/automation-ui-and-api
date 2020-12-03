@@ -102,7 +102,7 @@ class Base_api():
             dict["data"] = data
             yield dict
 
-    #  获取接口间的依赖关系
+    # 获取接口间的依赖关系
     def _get_exec_queue(self):
         """
     获取执行队列
@@ -178,7 +178,7 @@ class Base_api():
         except Exception as e:
             raise e
 
-    #  运行测试
+    # 运行测试
     def run(self):
         """
 根据接口文档信息自动运行对应的请求请求
