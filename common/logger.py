@@ -25,7 +25,7 @@ def log(logname="自动化测试"):
 
     # 创建一个logger
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     # 创建一个handler写入所有日志
     #fh = logging.FileHandler(all_log_name, mode='w', encoding='utf-8')

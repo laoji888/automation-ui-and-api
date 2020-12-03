@@ -4,7 +4,7 @@ import xlrd, requests, unittest, time, json
 from common import path
 from common.util import get_config_info, operation_mysql, operation_oracle
 
-log = log(logname="api", system="interfase")
+log = log(logname="api")
 
 
 # now_time = datetime.datetime.now() 获取时间
@@ -102,7 +102,7 @@ class Base_api():
             dict["data"] = data
             yield dict
 
-    # 获取接口间的依赖关系
+    # 获取执行队列
     def _get_exec_queue(self):
         """
     获取执行队列
@@ -120,6 +120,8 @@ class Base_api():
                 else:
                     self.exec_queue.reverse()
                     break
+        log.info("获取的执行队列是：{}".format(self.exec_queue))
+        log.info("当前的接口依赖数据是： {}".format(self.rely_data))
 
     # post请求
     def post(self):
@@ -140,14 +142,25 @@ class Base_api():
             # 参数是json，不上传文件
             elif self.data_type == "json" and self.upload_file == "":
                 response = self.session.post(url=self.url, json=self.parameter)
+            log.debug("运行post请求成功，请求的参数是：{}".format(self.parameter))
+            log.info("运行post请求成功")
         except Exception as e:
+            log.error("post请求失败！，错误信息是：{}".format(e))
+            log.error("post请求失败！，请求的参数是：{}".format(self.parameter))
             raise e
 
         return response.json()
 
     # get请求
     def get(self):
-        response = self.session.get(url=self.url, params=self.parameter)
+        response = ""
+        try:
+            response = self.session.get(url=self.url, params=self.parameter)
+            log.info("运行get请求成功")
+        except Exception as e:
+            log.error("get请求失败！，错误信息是：{}".format(e))
+            log.error("get请求失败！，请求参数是：{}".format(self.parameter))
+
         return response.json()
 
     # 检查点
@@ -174,8 +187,11 @@ class Base_api():
 
             elif assert_data[1] == "!=":
                 assert eval(assert_data[0]) != expect
-
+            log.info("检查点校验成功")
+            log.info("\n")
         except Exception as e:
+            log.error("检查点检验失败！预期结果是：{}，实际结果是：{}".format(self.assert_data,
+                                                         assert_data[0] + " " + assert_data[1] + " " +  eval(assert_data[0])))
             raise e
 
     # 运行测试
@@ -184,16 +200,12 @@ class Base_api():
 根据接口文档信息自动运行对应的请求请求
         """
         self._get_exec_queue()  # 获取执行队列（接口依赖关系）
-        print("当前的接口执行队列是： {}".format(self.exec_queue))
-        print("当前的接口依赖数据是： {}".format(self.rely_data))
-
-        response = ""  # 接口响应
-        response_json = ""  # 接口响应json
 
         # 遍历执行队列
         for i in self.exec_queue:
             # 遍历单个接口所有数据
             for j in self._get_all_data(i):
+
                 self.assert_data = j["ASSERT"]
 
                 # 判断传递的参数是否是json
@@ -240,17 +252,16 @@ class Base_api():
                 if self.exec_queue[-1] != i:
                     # 判断是否是正向测试用例
                     if j["TYPE"] != "":
-                        print("当前运行的依赖接口是{}".format(i))
 
                         # 判断请求的方法
                         if self.method == "get":
                             self.response_json =self.get()
-                            print(self.response_json)
+
                             self.verify()
 
                         elif self.method == "post":
                             self.response_json = self.post()
-                            print(self.response_json)
+
                             self.verify()
 
                         # 获取依赖数据
@@ -278,12 +289,12 @@ class Base_api():
                     print("当前运行的接口是：{}".format(i))
                     if self.method == "post":
                         self.response_json = self.post()
-                        print(self.response_json)
+
                         self.verify()
 
                     elif self.method == "get":
                         self.response_json = self.get()
-                        print(self.response_json)
+
                         self.verify()
 
 
@@ -296,11 +307,13 @@ class Base_api():
                             result = operation_mysql(database[1])
                         else:
                             result = operation_oracle(database[1])
-                        print(result)
+
                         for l in result:
                             for ii in l.keys():
                                 assert l[ii] == database[2]
+                        log.info("数据库检查点校验成功")
                     except Exception as e:
+                    # 单独封装数据库检查点
                         raise e
 
                 # 环境还原
@@ -310,6 +323,9 @@ class Base_api():
                         operation_mysql(database[1])
                     else:
                         operation_oracle(database[1])
+            log.info("当前请求的接口是：{},参数传递方式是：{}".format(i,self.data_type))
+            log.info("当前的接口请求数据是：{}".format(self.parameter))
+            log.info("当前接口返回数据是：{}".format(self.response_json))
 
         self.exec_queue.clear()  # 清空执行队列
 
@@ -332,10 +348,10 @@ class Base_api():
 
 
 if __name__ == '__main__':
-    # data = Base_api('guns.xlsx', "del_user")
+    data = Base_api('guns.xlsx', "del_user")
     # data = Base_api('ui-autotest.xlsx', "login")
     # data = Base_api('ui-autotest.xlsx', "upload")
     # data = Base_api('performance-autotest.xlsx', "login")
-    data = Base_api('performance-autotest.xlsx', "search-system")
+    # data = Base_api('performance-autotest.xlsx', "search-system")
     data.run()
 
