@@ -12,8 +12,7 @@ API：
             
             URL: 接口请求地址
             METHOD:请求方法
-            RESULT：获取返回结果的命令
-            EXPECT：预期结果
+            ASSERT：断言，例如：self.response_json["msg"] == 请求成功，运算符可以写“< > == in !=”
             RELY_API：当前接口所依赖的接口（sheet页名称）
             RELY_VALUE：当前接口所依赖的接口返回的数据获取方式。例如response_json["data"]-userId-account=laoji，以-分割。
             第一个元素是获取结果的语句，第二个元素是要获取的key，第三个元素是获取结果的条件（接口返回多条数据时大多使用列表的形式，
