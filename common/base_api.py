@@ -26,21 +26,23 @@ class Base_api():
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) '
                           'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36',
             'Accept': 'application/json, text/javascript, */*'}
+
         self.file = path.API_DOCUMENT + '/' + filepath
         self.data = xlrd.open_workbook(self.file)
         self.sheet_name = sheet_name
 
         self.exec_queue = [self.sheet_name]  # 接口执行队列
-        self.rely_data = {}  # 获取接口返回数据的表达式
-        self.rely = {}  # 存放接口的依赖数据
-
-        """
-        1、把post单独封装，在函数内判断应该使用什么样的请求。所需的判断条件全部放在初始化方法中
-        2、把断言单独封装，实现将断言< > =写在文档中。
-        """
-
-
-
+        self.rely_data = {}                  # 获取接口返回数据的表达式
+        self.rely = {}                       # 存放接口的依赖数据
+        self.session = ""                    # 会话对象
+        self.uploadFile = False              # 是否上传文件
+        self.data_type = "data"              # 请求数据的类型
+        self.parameter = ""                  # 请求传递的数据
+        self.upload_file = ""                # 要上传的文件
+        self.url = ""                        # 请求地址
+        self.method = ""                     # 请求方法
+        self.assert_data = ""                # 断言数据
+        self.response_json = ""              # 接口返回的json数据
 
     #  获取sheet页下的所有数据
     def _get_all_data(self, name=None):
@@ -54,12 +56,13 @@ class Base_api():
             sheet_name = name
 
         table = self.data.sheet_by_name(sheet_name)
-        nor = table.nrows  # 行
-        nol = table.ncols  # 列
-        data = {}
-        dict = {}
-        for i in range(1, nor):
-            for j in range(nol):
+        row = table.nrows   # 行数
+        ncol = table.ncols  # 列数
+        data = {}           # 请求参数
+        dict = {}           # 请求时需要的其他参数
+
+        for i in range(1, row):
+            for j in range(ncol):
                 title = table.cell_value(0, j)
                 value = table.cell_value(i, j)
                 value_type = table.cell(i, j).ctype  # ctype : 0 空,1 字符串, 2 数字, 3 date, 4 布尔, 5 错误
@@ -69,6 +72,7 @@ class Base_api():
                     value = int(value)
                     if value == 0.0:
                         value = int(value)
+
                 # 如果ctype为3，格式化日期
                 elif value_type == 3:
                     value = xlrd.xldate_as_datetime(table.cell(i, j).value, 0).strftime("%Y/%m/%d")
@@ -82,6 +86,7 @@ class Base_api():
             # 参数的值是否为空或null，如果为空就删除该键值对，如果为null就把该键改成 “”，如果读取的值是time就转换成当前时间
             t = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime())
             for k in list(data.keys()):
+
                 # 值为空时删除该键值对，，模拟接口测试中不传该参数
                 if not data[k]:
                     del data[k]
@@ -100,7 +105,7 @@ class Base_api():
     #  获取接口间的依赖关系
     def _get_exec_queue(self):
         """
-获取执行队列
+    获取执行队列
         """
         for i in self.exec_queue:
             for j in self._get_all_data(i):
@@ -117,65 +122,93 @@ class Base_api():
                     break
 
     # post请求
-    def post(self, session, url, data, file=None, data_type="data"):
-        """
-        :param session: 请求的会话对象
-        :param url: 请求地址
-        :param data: 请求的数据
-        :param file: 要上传的文件（转码以后的）
-        :param data_type: 请求的参数类型（data或者json）
-        :return:
-        """
+    def post(self):
         response = ""
+        try:
+            # 参数是字典，不上传文件
+            if self.data_type == "data" and self.upload_file == "":
+                response = self.session.post(url=self.url, data=self.parameter)
 
-        if data_type == "data" and file == None:
-            response = session.post(url=url, data=data)
+            # 参数是字典，上传文件
+            elif self.data_type == "data" and self.upload_file != "":
+                response = self.session.post(url=self.url, data=self.parameter, files=self.upload_file)
 
-        elif data_type == "data" and file != None:
-            response = session.post(url=url, data=data, files=file)
+            # 参数是json，上传文件
+            elif self.data_type == "json" and self.upload_file != "":
+                response = self.session.post(url=self.url, json=self.parameter, files=self.upload_file)
 
-        elif data_type == "json" and file != None:
-            response = session.post(url=url, json=data, files=file)
+            # 参数是json，不上传文件
+            elif self.data_type == "json" and self.upload_file == "":
+                response = self.session.post(url=self.url, json=self.parameter)
+        except Exception as e:
+            raise e
 
-        elif data_type == "json" and file == None:
-            response = session.post(url=url, json=data)
-
-        print(response.text)
         return response.json()
+
+    # get请求
+    def get(self):
+        response = self.session.get(url=self.url, params=self.parameter)
+        return response.json()
+
+    # 检查点
+    def verify(self):
+        assert_data = self.assert_data.split(" ")
+        expect = ""
+        if assert_data[2].isdigit():
+            expect = int(assert_data[2])
+        else:
+            expect = assert_data[2]
+
+        try:
+            if assert_data[1] == "==":
+                assert eval(assert_data[0]) == expect
+
+            elif assert_data[1] == "<":
+                assert eval(assert_data[0]) < expect
+
+            elif assert_data[1] == ">":
+                assert eval(assert_data[0]) > expect
+
+            elif assert_data[1] == "in":
+                assert expect in eval(assert_data[0])
+
+            elif assert_data[1] == "!=":
+                assert eval(assert_data[0]) != expect
+
+        except Exception as e:
+            raise e
 
     #  运行测试
     def run(self):
         """
 根据接口文档信息自动运行对应的请求请求
         """
-        url = ""
-        method = ""
         self._get_exec_queue()  # 获取执行队列（接口依赖关系）
         print("当前的接口执行队列是： {}".format(self.exec_queue))
         print("当前的接口依赖数据是： {}".format(self.rely_data))
-        session = ""  # 会话对象
+
         response = ""  # 接口响应
         response_json = ""  # 接口响应json
-        uploadFile = False  # 是否上传文件
-        data_type = "data"  # 请求数据的类型
-        data = ""  # 请求传递的数据
-        upload_file = ""
 
-        for i in self.exec_queue:  # 遍历执行队列
-            for j in self._get_all_data(i):  # 遍历单个接口所有数据
+        # 遍历执行队列
+        for i in self.exec_queue:
+            # 遍历单个接口所有数据
+            for j in self._get_all_data(i):
+                self.assert_data = j["ASSERT"]
+
                 # 判断传递的参数是否是json
                 if "json" in j["data"]:
-                    data = eval(j["data"]["json"])
-                    data_type = "json"
+                    self.parameter = eval(j["data"]["json"])
+                    self.data_type = "json"
                 else:
-                    data = j["data"]
+                    self.parameter = j["data"]
 
                 # 判断是否需要上传文件
                 if j["FILE"] != "":
-                    uploadFile = True
+                    self.uploadFile = True
                     upload_info = j["FILE"].split("-")
                     filePate = path.UPLOAD_DIR + "/" + upload_info[1]
-                    upload_file = {upload_info[0]: open(filePate, 'rb')}
+                    self.upload_file = {upload_info[0]: open(filePate, 'rb')}
 
                 # 初始化环境
                 if j["INITIALIZE"] != "":
@@ -187,15 +220,15 @@ class Base_api():
 
                 # 请求地址和请求方法在单个用例内数据持久化
                 if j["URL"] != "":
-                    url = j["URL"]
-                    method = j["METHOD"]
+                    self.url = j["URL"]
+                    self.method = j["METHOD"]
 
                 # 判断是否需要使用特定的用户登录后操作
                 if j["RELY_USER"] == "":
-                    session = requests.Session()
+                    self.session = requests.Session()
                 else:
                     userInfo = j["RELY_USER"].split("-")
-                    session = self.add_session(userInfo)
+                    self.session = self.add_session(userInfo)
 
                 # 将被依赖接口的返回数据添加到对应的接口请求参数中
                 for before in j["data"].keys():
@@ -210,63 +243,30 @@ class Base_api():
                         print("当前运行的依赖接口是{}".format(i))
 
                         # 判断请求的方法
-                        if method == "get":
-                            try:
-                                response = session.get(url=url, params=data)
-                                print(response.json())
+                        if self.method == "get":
+                            self.response_json =self.get()
+                            print(self.response_json)
+                            self.verify()
 
-                                response_json = response.json()
-                                assert eval(j["RESULT"]) == j["EXPECT"]
-                            except Exception as e:
-                                raise e
+                        elif self.method == "post":
+                            self.response_json = self.post()
+                            print(self.response_json)
+                            self.verify()
 
-                        elif method == "post":
-                            if data_type == "json" and uploadFile == False:
-                                try:
-                                    response_json = self.post(session, url, data, data_type="json")
-                                    print(response_json)
-                                    assert eval(j["RESULT"]) == j["EXPECT"]
-                                except Exception as e:
-                                    raise e
-
-                            elif data_type == "data" and uploadFile == False:
-                                try:
-                                    response_json = self.post(session, url, data, data_type="data")
-                                    print(response_json)
-                                    assert eval(j["RESULT"]) == j["EXPECT"]
-                                except Exception as e:
-                                    raise e
-
-                            elif data_type == "json" and uploadFile == True:
-                                try:
-                                    response_json = self.post(session, url, data, file=upload_file, data_type="json")
-                                    print(response_json)
-                                    assert eval(j["RESULT"]) == j["EXPECT"]
-                                except Exception as e:
-                                    raise e
-
-                            elif data_type == "data" and uploadFile == True:
-                                try:
-                                    response_json = self.post(session, url, data, file=upload_file, data_type="data")
-                                    print(response_json)
-                                    assert eval(j["RESULT"]) == j["EXPECT"]
-                                except Exception as e:
-                                    raise e
-
-                        # 判断是否需要接口的返回数据
+                        # 获取依赖数据
                         for key in self.rely_data.keys():
                             if key == i:
                                 get_result_str = self.rely_data[i].split("-")  # 获取返回数据的表达式
                                 if len(get_result_str) > 2:  # 大于2时证明获取数据需要条件
                                     where = get_result_str[2].split("=")
                                     # 获取结果的条件
-                                    key = where[0]
-                                    value = where[1]
+                                    where_key = where[0]
+                                    where_value = where[1]
 
                                     # 判断获取数据的元素是否是列表或者字典
                                     if type(eval(get_result_str[0])) == list:
                                         for v in eval(get_result_str[0]):
-                                            if v[key] == value:
+                                            if v[where_key] == where_value:
                                                 self.rely[get_result_str[1]] = v[get_result_str[1]]
 
                                 else:  # 没有符合条件的接口，未验证
@@ -276,47 +276,15 @@ class Base_api():
 
                 else:  # 不是依赖执行，遍历所有测试参数
                     print("当前运行的接口是：{}".format(i))
-                    if method == "post":
-                        if data_type == "json" and uploadFile == False:
-                            try:
-                                response_json = self.post(session, url, data, data_type="json")
-                                print(response_json)
-                                assert eval(j["RESULT"]) == j["EXPECT"]
-                            except Exception as e:
-                                raise e
+                    if self.method == "post":
+                        self.response_json = self.post()
+                        print(self.response_json)
+                        self.verify()
 
-                        elif data_type == "data" and uploadFile == False:
-                            try:
-                                response_json = self.post(session, url, data, data_type="data")
-                                print(response_json)
-                                assert eval(j["RESULT"]) == j["EXPECT"]
-                            except Exception as e:
-                                raise e
-
-                        elif data_type == "json" and uploadFile == True:
-                            try:
-                                response_json = self.post(session, url, data, file=upload_file, data_type="json")
-                                print(response_json)
-                                assert eval(j["RESULT"]) == j["EXPECT"]
-                            except Exception as e:
-                                raise e
-
-                        elif data_type == "data" and uploadFile == True:
-                            try:
-                                response_json = self.post(session, url, data, file=upload_file, data_type="data")
-                                print(response_json)
-                                assert eval(j["RESULT"]) == j["EXPECT"]
-                            except Exception as e:
-                                raise e
-
-                    elif method == "get":
-                        try:
-                            response = session.get(url=url, params=data)
-                            print(response.json())
-                            response_json = response.json()
-                            assert eval(j["RESULT"]) == j["EXPECT"]
-                        except Exception as e:
-                            raise e
+                    elif self.method == "get":
+                        self.response_json = self.get()
+                        print(self.response_json)
+                        self.verify()
 
 
                 # 数据库断言
@@ -370,4 +338,4 @@ if __name__ == '__main__':
     # data = Base_api('performance-autotest.xlsx', "login")
     data = Base_api('performance-autotest.xlsx', "search-system")
     data.run()
-    # data.add_session(aa)
+

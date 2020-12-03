@@ -10,9 +10,14 @@ import requests,json
 # cc = r.post(url="http://120.52.96.35:49000/autotest_sv/testSystem/queryPage",json=data)
 # print(cc.text)
 
+#
+# data = '{"pageNum":1,"pageSize":10,"totalRecord":51,"testSystemName":"测试报告用","testSystemIp":""}'
+# print(type(data))
+# print(type(eval(data)))
+# print(type(json.loads(data)))
 
-data = '{"pageNum":1,"pageSize":10,"totalRecord":51,"testSystemName":"测试报告用","testSystemIp":""}'
-print(type(data))
-print(type(eval(data)))
-print(type(json.loads(data)))
+a = "123123123"
+# x = a.split(" ")
+# print(x)
+print(12 in a)
 
