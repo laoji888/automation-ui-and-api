@@ -2,11 +2,15 @@
 # @Date      : 2020-05-19
 # @Author  : 纪亚男
 # 读取配置文件信息
-import multiprocessing, os, pymysql, cx_Oracle, sys
+
+
+import sys, multiprocessing, os, pymysql, cx_Oracle
+sys.path.append("/root/.jenkins/workspace/autotest")
 from configobj import ConfigObj
 from common import path
 
 filepath = path.CONFIG_DIR
+
 
 def get_config_info(section, key=None, filename="config.ini"):
     """
@@ -23,6 +27,7 @@ def get_config_info(section, key=None, filename="config.ini"):
         return dict(config[section])
     else:
         return config[section][key]
+
 
 def operation_mysql(sql, databaseInfo="MySQL"):
     """
@@ -56,6 +61,7 @@ def operation_mysql(sql, databaseInfo="MySQL"):
 
         return results
 
+
 def operation_oracle(sql, databaseInfo="Oracle"):
     """
 操作Oracle数据库，如果要操作多个系统的数据库时可以在config下的configInfo配置数据库的相关信息
@@ -86,6 +92,7 @@ def operation_oracle(sql, databaseInfo="Oracle"):
     cur.close()
     conn.close()
 
+
 def multiprocess(func):
     def wrapper():
         dict = get_config_info("web", filename="devices_info.ini")
@@ -97,6 +104,7 @@ def multiprocess(func):
 
     return wrapper
 
+
 def control_file_quantity(path):
     """
 控制目录下文件的数量
@@ -107,6 +115,7 @@ def control_file_quantity(path):
         count.sort()
         ph = path + "/" + count[0]
         os.remove(ph)
+
 
 if __name__ == '__main__':
     r = operation_mysql('DELETE FROM sys_user WHERE account="laoji"')

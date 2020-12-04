@@ -3,10 +3,10 @@
 # @Author  : 纪亚男
 # 主要对selenium常用的方法进行二次封装
 
-import re, os, datetime, xlrd
+import sys ,re, xlrd, requests
+sys.path.append("/root/.jenkins/workspace/autotest")
 from selenium import webdriver
 from common.util import *
-import requests
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC

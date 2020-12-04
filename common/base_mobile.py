@@ -1,5 +1,7 @@
-from time import sleep
 
+import sys
+sys.path.append("/root/.jenkins/workspace/autotest")
+from time import sleep
 from appium.webdriver.common.touch_action import TouchAction
 from common.base_web import Base_web
 

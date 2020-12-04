@@ -1,4 +1,8 @@
-import time
+
+
+
+import sys ,re, xlrd, requests, time
+sys.path.append("/root/.jenkins/workspace/autotest")
 from appium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait

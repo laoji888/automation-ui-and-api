@@ -2,10 +2,10 @@
 # @Date      : 2020-05-19
 # @Author  : 纪亚男
 # 选择并启动对应的浏览器
-import os
-import time
-from selenium import webdriver
 
+import sys ,re, xlrd, requests
+sys.path.append("/root/.jenkins/workspace/autotest")
+from selenium import webdriver
 from common import path
 from common.util import get_config_info
 from common.logger import log
