@@ -14,4 +14,4 @@ class Test_case():
 
 if __name__ == '__main__':
 
-    pytest.main(" --html report.html")
+    pass
