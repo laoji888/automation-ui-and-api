@@ -1,8 +1,9 @@
 
 
 
-import sys ,re, xlrd, requests, time
-sys.path.append("/root/.jenkins/workspace/autotest")
+import sys ,re, xlrd, requests, time, os
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+sys.path.append(BASE_DIR)
 from appium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait

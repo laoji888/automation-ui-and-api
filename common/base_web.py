@@ -3,8 +3,9 @@
 # @Author  : 纪亚男
 # 主要对selenium常用的方法进行二次封装
 
-import sys ,re, xlrd, requests
-sys.path.append("/root/.jenkins/workspace/autotest")
+import sys ,re, xlrd, requests,os
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+sys.path.append(BASE_DIR)
 from selenium import webdriver
 from common.util import *
 from selenium.webdriver.common.keys import Keys

@@ -1,0 +1,19 @@
+[32mINFO    [0m root:base_api.py:125 获取的执行队列是：['add_app', 'search_user', 'del_user']
+[32mINFO    [0m root:base_api.py:126 当前的接口依赖数据是： {'search_user': 'self.response_json["data"]-userId-account=laoji'}
+[32mINFO    [0m root:base_api.py:148 运行post请求成功
+[32mINFO    [0m root:base_api.py:192 检查点校验成功
+[32mINFO    [0m root:base_api.py:319 数据库检查点校验成功
+[32mINFO    [0m root:base_api.py:336 当前请求的接口是：【add_app】,参数传递方式是：【data】
+[32mINFO    [0m root:base_api.py:337 当前的接口请求数据是：{'sex': 'M', 'rePassword': 111111, 'position': 2, 'phone': 13311112222, 'password': '', 'name': 'laoji', 'email': 'laoji@163.com', 'deptName': '开发部', 'deptId': 25, 'birthday': '2020/11/18', 'account': 'laoji'}
+[32mINFO    [0m root:base_api.py:338 当前接口返回数据是：{'code': 200, 'data': '', 'message': '请求成功', 'success': True}
+[32mINFO    [0m root:base_api.py:161 运行get请求成功
+[32mINFO    [0m root:base_api.py:192 检查点校验成功
+[32mINFO    [0m root:base_api.py:336 当前请求的接口是：【search_user】,参数传递方式是：【data】
+[32mINFO    [0m root:base_api.py:337 当前的接口请求数据是：{'page': 1, 'limit': 10}
+[32mINFO    [0m root:base_api.py:338 当前接口返回数据是：{'code': 0, 'count': 3, 'data': [{'birthday': '2018-11-16 00:00:00', 'deptName': '开发部', 'salt': 'abcdef', 'roleId': '1', 'sex': 'M', 'deptId': 25, 'updateUser': 24, 'updateTime': '2019-06-28 14:38:19', 'avatar': '1124606971782160385', 'userId': 1, 'version': 25, 'positionName': '董事长', 'phone': '18200000000', 'createTime': '2016-01-29 08:49:53', 'sexName': '男', 'name': 'stylefeng', 'roleName': '超级管理员', 'statusName': '启用', 'account': 'admin', 'email': 'sn93@qq.com', 'status': 'ENABLE'}, {'birthday': '2020-11-18 00:00:00', 'deptName': '开发部', 'salt': 'fx0lt', 'roleId': '1,5', 'sex': 'M', 'deptId': 25, 'userId': '1331486000970510338', 'positionName': '总经理', 'phone': '13311112222', 'createTime': '2020-11-25 14:32:55', 'sexName': '男', 'name': 'laoji01', 'roleName': '超级管理员,第三方登录', 'statusName': '启用', 'createUser': 1, 'account': 'laoji01', 'email': 'laoji@163.com', 'status': 'ENABLE'}, {'birthday': '2020-11-18 00:00:00', 'deptName': '开发部', 'salt': '1ivef', 'sex': 'M', 'deptId': 25, 'userId': '1334763739295035393', 'positionName': '总经理', 'phone': '13311112222', 'createTime': '2020-12-04 15:37:29', 'sexName': '男', 'name': 'laoji', 'roleName': '', 'statusName': '启用', 'createUser': 1, 'account': 'laoji', 'email': 'laoji@163.com', 'status': 'ENABLE'}], 'msg': '请求成功'}
+[32mINFO    [0m root:base_api.py:148 运行post请求成功
+[32mINFO    [0m root:base_api.py:192 检查点校验成功
+[32mINFO    [0m root:base_api.py:336 当前请求的接口是：【del_user】,参数传递方式是：【data】
+[32mINFO    [0m root:base_api.py:337 当前的接口请求数据是：{'userId': '1334763739295035393'}
+[32mINFO    [0m root:base_api.py:338 当前接口返回数据是：{'code': 200, 'data': '', 'message': '请求成功', 'success': True}
+[32mINFO    [0m root:base_api.py:341

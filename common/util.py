@@ -3,9 +3,9 @@
 # @Author  : 纪亚男
 # 读取配置文件信息
 
-
 import sys, multiprocessing, os, pymysql, cx_Oracle
-sys.path.append("/root/.jenkins/workspace/autotest")
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+sys.path.append(BASE_DIR)
 from configobj import ConfigObj
 from common import path
 

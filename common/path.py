@@ -10,7 +10,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(BASE_DIR)
 
 # 测试报告目录
-TEST_REPORT = os.path.join(BASE_DIR,"result/").replace('\\','/')
+TEST_REPORT = os.path.join(BASE_DIR,"report/").replace('\\','/')
+# allure测试数据
+AULLURE_RESULT = os.path.join(BASE_DIR,"allureResult/").replace('\\','/')
 # 日志目录
 LOG_DIR = os.path.join(BASE_DIR,"logs").replace('\\','/')
 # 测试用例

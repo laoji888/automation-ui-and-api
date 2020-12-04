@@ -1,5 +1,6 @@
-import sys
-sys.path.append("/root/.jenkins/workspace/autotest")
+import sys,os
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+sys.path.append(BASE_DIR)
 from common.logger import log
 import xlrd, requests, unittest, time, json
 from common import path
@@ -359,6 +360,10 @@ class Base_api():
 
 
 if __name__ == '__main__':
+    BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+    sys.path.append(BASE_DIR)
+    if not os.path.exists(path.TEST_REPORT): os.mkdir(path.TEST_REPORT)
+    if not os.path.exists(path.AULLURE_RESULT): os.mkdir(path.AULLURE_RESULT)
     data = Base_api('guns.xlsx', "del_user")
     # data = Base_api('ui-autotest.xlsx', "login")
     # data = Base_api('ui-autotest.xlsx', "upload")

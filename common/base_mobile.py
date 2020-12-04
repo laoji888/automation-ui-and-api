@@ -1,6 +1,7 @@
 
-import sys
-sys.path.append("/root/.jenkins/workspace/autotest")
+import sys,os
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+sys.path.append(BASE_DIR)
 from time import sleep
 from appium.webdriver.common.touch_action import TouchAction
 from common.base_web import Base_web

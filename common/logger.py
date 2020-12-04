@@ -3,8 +3,9 @@
 # @Author  : 纪亚男
 # 封装log日志功能
 
-import sys ,re, xlrd, requests, time
-sys.path.append("/root/.jenkins/workspace/autotest")
+import sys ,re, xlrd, requests, time, os
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+sys.path.append(BASE_DIR)
 import logging, time, os
 from common import path
 from common.util import control_file_quantity

@@ -3,8 +3,9 @@
 # @Author  : 纪亚男
 # 选择并启动对应的浏览器
 
-import sys ,re, xlrd, requests
-sys.path.append("/root/.jenkins/workspace/autotest")
+import sys ,re, xlrd, requests, os
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+sys.path.append(BASE_DIR)
 from selenium import webdriver
 from common import path
 from common.util import get_config_info
