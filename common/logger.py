@@ -14,7 +14,7 @@ def log(logname="自动化测试",type=""):
     :param type: 日志类型（api、webUI、mobileui）
     :return:
     """
-    control_file_quantity(os.path.join(path.LOG_DIR, type)) # 控制日志数量，数量在config中配置
+
     current_time = time.strftime("%Y-%m-%d")
     file = logname + "-" + current_time + ".log"
 
@@ -60,6 +60,7 @@ def log(logname="自动化测试",type=""):
     logger.addHandler(fh)
     logger.addHandler(ch)
 
+    control_file_quantity(os.path.join(path.LOG_DIR, type))  # 控制日志数量，数量在config中配置
     return logger
 
 if __name__ == '__main__':
