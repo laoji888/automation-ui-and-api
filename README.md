@@ -1,5 +1,6 @@
 # automation-ui-and-api
 web和移动端ui、接口自动化框架集合
+执行   pip install selenium requests xlrd pytest PyMySQL cx-Oracle Appium-Python-Client allure-pytest
 
 API：
 

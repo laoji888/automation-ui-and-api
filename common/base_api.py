@@ -1,4 +1,5 @@
-import datetime
+import sys
+sys.path.append("/root/.jenkins/workspace/autotest")
 from common.logger import log
 import xlrd, requests, unittest, time, json
 from common import path
