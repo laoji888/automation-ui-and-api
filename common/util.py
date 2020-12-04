@@ -2,13 +2,11 @@
 # @Date      : 2020-05-19
 # @Author  : 纪亚男
 # 读取配置文件信息
-import multiprocessing
-import threading
+import multiprocessing, os, pymysql, cx_Oracle, sys
 from configobj import ConfigObj
 from common import path
-import pymysql, cx_Oracle, sys
-filepath = path.CONFIG_DIR
 
+filepath = path.CONFIG_DIR
 
 def get_config_info(section, key=None, filename="config.ini"):
     """
@@ -19,13 +17,12 @@ def get_config_info(section, key=None, filename="config.ini"):
     :param filename: .int文件名
     :return:
     """
-    path = filepath + "/" +filename
+    path = filepath + "/" + filename
     config = ConfigObj(path, encoding='UTF-8')
     if key == None:
         return dict(config[section])
     else:
         return config[section][key]
-
 
 def operation_mysql(sql, databaseInfo="MySQL"):
     """
@@ -49,18 +46,15 @@ def operation_mysql(sql, databaseInfo="MySQL"):
                              user=user,
                              passwd=pwd,
                              db=database)
-        # log.info('数据库已连接')
     except Exception as e:
         raise e
-        # log.error("数据库连接失败-->{}".format(e))
     else:
         cursor = db.cursor(pymysql.cursors.DictCursor)  # 获取操作游标
         cursor.execute(sql)  # 执行SQL语句
         results = cursor.fetchall()  # 获取所有记录列表
         db.commit()
-        # log.info('sql语句执行成功')
-        return results
 
+        return results
 
 def operation_oracle(sql, databaseInfo="Oracle"):
     """
@@ -76,11 +70,9 @@ def operation_oracle(sql, databaseInfo="Oracle"):
     selector = data["username"] + "/" + data["paswd"] + "@" + data["host"] + "/" + data["databasename"]
     try:
         conn = cx_Oracle.connect(selector)
-        # log.info("数据库连接成功")
     except Exception as e:
         print(e)
         pass
-        # log.error("数据库连接错误-->{}".format(e))
     # 执行sql语句
     cur = conn.cursor()
     cur.execute(sql)
@@ -93,8 +85,6 @@ def operation_oracle(sql, databaseInfo="Oracle"):
     conn.commit()
     cur.close()
     conn.close()
-    # log.info("操作Oracle数据库成功-->{}".format(sql))
-
 
 def multiprocess(func):
     def wrapper():
@@ -104,12 +94,20 @@ def multiprocess(func):
             print(v)
             p = multiprocessing.Process(target=func, args=(v,))
             p.start()
+
     return wrapper
+
+def control_file_quantity(path):
+    """
+控制目录下文件的数量
+    :param path: ，目录路径
+    """
+    count = os.listdir(path)
+    if len(count) > int(get_config_info("Report_quantity", "quantity")):
+        count.sort()
+        ph = path + "/" + count[0]
+        os.remove(ph)
 
 if __name__ == '__main__':
     r = operation_mysql('DELETE FROM sys_user WHERE account="laoji"')
     print(r)
-
-
-
-

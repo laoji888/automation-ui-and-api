@@ -5,19 +5,25 @@
 
 import logging, time, os
 from common import path
+from common.util import control_file_quantity
 
-def log(logname="自动化测试"):
+
+def log(logname="自动化测试",type=""):
     """
-    记录日志
-    :param logname: 日志文件的名称
+    :param logname: 日志名称
+    :param type: 日志类型（api、webUI、mobileui）
     :return:
     """
+    control_file_quantity(os.path.join(path.LOG_DIR, type)) # 控制日志数量，数量在config中配置
     current_time = time.strftime("%Y-%m-%d")
     file = logname + "-" + current_time + ".log"
 
     # 如果没有对应的日志目录和文件就新建
     if not os.path.exists(path.LOG_DIR): os.mkdir(path.LOG_DIR)
-    LOG_DIR = os.path.join(path.LOG_DIR, file).replace('\\', '/')
+    if not os.path.exists(os.path.join(path.LOG_DIR,"api").replace('\\', '/')): os.mkdir(os.path.join(path.LOG_DIR,"api").replace('\\', '/'))
+    if not os.path.exists(os.path.join(path.LOG_DIR,"webUI").replace('\\', '/')): os.mkdir(os.path.join(path.LOG_DIR,"webUI").replace('\\', '/'))
+    if not os.path.exists(os.path.join(path.LOG_DIR,"mobileUI").replace('\\', '/')): os.mkdir(os.path.join(path.LOG_DIR,"mobileUI").replace('\\', '/'))
+    LOG_DIR = os.path.join(path.LOG_DIR, type, file).replace('\\', '/')
     if not os.path.isfile(LOG_DIR):  # 无文件时创建
         fd = open(LOG_DIR, "w+")
         fd.close()
@@ -53,4 +59,8 @@ def log(logname="自动化测试"):
     # 给logger添加handler
     logger.addHandler(fh)
     logger.addHandler(ch)
+
     return logger
+
+if __name__ == '__main__':
+    control_file_quantity("E:\\python_script\\automation-ui-and-api\\logs\\api")

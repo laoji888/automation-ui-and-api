@@ -4,7 +4,7 @@ import xlrd, requests, unittest, time, json
 from common import path
 from common.util import get_config_info, operation_mysql, operation_oracle
 
-log = log(logname="api")
+log = log(logname="api", type="api")
 
 
 # now_time = datetime.datetime.now() 获取时间
@@ -23,7 +23,7 @@ class Base_api():
         :param sheet_name: 要遍历的参数sheet页名字
         """
         self.header = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) '
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64)'
                           'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36',
             'Accept': 'application/json, text/javascript, */*'}
 
@@ -295,9 +295,16 @@ class Base_api():
 
                 # 数据库断言
                 if j["DATABASE_ASSERT"] != "":
+                    expect = ""
                     result = ""
+
                     try:
                         database = j["DATABASE_ASSERT"].split("-")
+                        if database[2].isdigit():
+                            expect = int(database[2])
+                        else:
+                            expect = database[2]
+
                         if database[0] == "mysql":
                             result = operation_mysql(database[1])
                         else:
@@ -305,10 +312,16 @@ class Base_api():
 
                         for l in result:
                             for ii in l.keys():
-                                assert l[ii] == database[2]
-                        log.info("数据库检查点校验成功")
+                                try:
+                                    assert l[ii] == expect
+                                    log.info("数据库检查点校验成功")
+                                except Exception as e:
+                                    log.error("数据库检查点失败！预期结果是：{}，实际结果是：{}".
+                                              format(database[1] + "==" + database[2],l[ii]))
+                                    log.error("数据库检查点失败！错误信息是：{}".format(e))
+                                    raise e
                     except Exception as e:
-                    # 单独封装数据库检查点
+                        log.error(e)
                         raise e
 
                 # 环境还原
@@ -318,12 +331,13 @@ class Base_api():
                         operation_mysql(database[1])
                     else:
                         operation_oracle(database[1])
-            log.info("当前请求的接口是：{},参数传递方式是：{}".format(i,self.data_type))
+            log.info("当前请求的接口是：【{}】,参数传递方式是：【{}】".format(i,self.data_type))
             log.info("当前的接口请求数据是：{}".format(self.parameter))
             log.info("当前接口返回数据是：{}".format(self.response_json))
 
         self.exec_queue.clear()  # 清空执行队列
         log.info("\n")
+        return self.response_json
 
     # 创建会话对象
     def add_session(self, userInfo):
