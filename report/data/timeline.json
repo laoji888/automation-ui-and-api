@@ -1,0 +1,26 @@
+{
+  "uid" : "ab17fc5a4eb3bca4b216b548c7f9fcbc",
+  "name" : "timeline",
+  "children" : [ {
+    "name" : "DESKTOP-HPQ4M5U",
+    "children" : [ {
+      "name" : "7736-MainThread",
+      "children" : [ {
+        "name" : "test_t01",
+        "uid" : "2ecbbb0b4477508f",
+        "parentUid" : "dfae580fbbdaf4a8905a985c69bd1e27",
+        "status" : "passed",
+        "time" : {
+          "start" : 1607067438753,
+          "stop" : 1607067439484,
+          "duration" : 731
+        },
+        "flaky" : false,
+        "newFailed" : false,
+        "parameters" : [ ]
+      } ],
+      "uid" : "dfae580fbbdaf4a8905a985c69bd1e27"
+    } ],
+    "uid" : "bb18033fee017d8c59d689b27f1e9d91"
+  } ]
+}

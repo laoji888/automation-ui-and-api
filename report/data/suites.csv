@@ -1,0 +1,2 @@
+"Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
+"passed","Fri Dec 04 15:37:18 CST 2020","Fri Dec 04 15:37:19 CST 2020","731","testCase.api","test_case","Test_case","","","test_t01",""
